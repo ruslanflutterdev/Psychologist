@@ -18,15 +18,11 @@ class PsychWebApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => SessionCubit(),
-      child: Builder(
-        builder: (context) {
-          return MaterialApp(
-            title: 'PsyWell – Psychologist Web',
-            theme: AppTheme.light,
-            initialRoute: '/register',
-            onGenerateRoute: AppRouter.onGenerateRoute,
-          );
-        },
+      child: MaterialApp(
+        title: 'PsyWell – Psychologist Web',
+        theme: AppTheme.light,
+        initialRoute: '/login',
+        onGenerateRoute: AppRouter.onGenerateRoute,
       ),
     );
   }

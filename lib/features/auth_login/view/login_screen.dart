@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_bloc.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_event.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_state.dart';
+import 'package:heros_journey/features/auth_login/bloc/login_bloc.dart';
+import 'package:heros_journey/features/auth_login/bloc/login_event.dart';
 
-class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
   @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
@@ -24,9 +23,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
-    context.read<RegistrationBloc>().add(
-      RegistrationSubmitted(email: _emailCtrl.text, password: _passCtrl.text),
-    );
+    context.read<LoginBloc>().add(LoginSubmitted(email: _emailCtrl.text, password: _passCtrl.text));
   }
 
   @override
@@ -41,7 +38,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: BlocConsumer<RegistrationBloc, RegistrationState>(
+              child: BlocConsumer<LoginBloc, LoginState>(
                 listenWhen: (p, c) => p.isSuccess != c.isSuccess,
                 listener: (context, state) {
                   if (state.isSuccess) {
@@ -55,7 +52,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('Регистрация (Психолог)', style: theme.textTheme.headlineSmall),
+                        Text('Вход (Психолог)', style: theme.textTheme.headlineSmall),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _emailCtrl,
@@ -95,20 +92,36 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 onPressed: state.isLoading ? null : () => _submit(context),
                                 child: state.isLoading
                                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                    : const Text('Зарегистрироваться'),
+                                    : const Text('Войти'),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        TextButton.icon(
-                          onPressed: state.isLoading
-                              ? null
-                              : () {
-                            Navigator.of(context).pushReplacementNamed('/login');
-                          },
-                          icon: const Icon(Icons.arrow_back),
-                          label: const Text('Назад'),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: state.isLoading
+                                  ? null
+                                  : () {
+                                context.read<LoginBloc>().add(LoginGoRegister());
+                                Navigator.of(context).pushReplacementNamed('/register');
+                              },
+                              child: const Text('Регистрация'),
+                            ),
+                            TextButton(
+                              onPressed: state.isLoading
+                                  ? null
+                                  : () {
+                                context.read<LoginBloc>().add(LoginForgotPassword());
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Забыли пароль: функционал будет позже')),
+                                );
+                              },
+                              child: const Text('Забыли пароль'),
+                            ),
+                          ],
                         ),
                       ],
                     ),

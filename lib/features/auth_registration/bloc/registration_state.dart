@@ -2,11 +2,13 @@ class RegistrationState {
   final bool isLoading;
   final bool isSuccess;
   final String? errorMessage;
+
   const RegistrationState({
     this.isLoading = false,
     this.isSuccess = false,
     this.errorMessage,
   });
+
   RegistrationState copyWith({
     bool? isLoading,
     bool? isSuccess,
@@ -16,5 +18,6 @@ class RegistrationState {
     isSuccess: isSuccess ?? this.isSuccess,
     errorMessage: errorMessage,
   );
+
   static const initial = RegistrationState();
 }

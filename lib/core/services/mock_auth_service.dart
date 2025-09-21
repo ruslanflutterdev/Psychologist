@@ -4,6 +4,7 @@ import 'package:heros_journey/core/services/auth_service.dart';
 
 class MockAuthService implements AuthService {
   final Set<String> _registeredEmails = {'busy@school.kz'};
+  final Map<String, String> _passwords = {'busy@school.kz': '123456'};
   Duration latency = const Duration(milliseconds: 600);
   bool failNetwork = false;
 
@@ -32,6 +33,30 @@ class MockAuthService implements AuthService {
     }
 
     _registeredEmails.add(normalized);
+    _passwords[normalized] = password.trim();
+    return UserSession(
+      token:
+          'mock-token:${normalized.hashCode}:${DateTime.now().millisecondsSinceEpoch}',
+      role: 'psych',
+      email: normalized,
+    );
+  }
+
+  @override
+  Future<UserSession> loginPsychologist({
+    required String email,
+    required String password,
+  }) async {
+    await Future<void>.delayed(latency);
+    if (failNetwork) {
+      throw AuthException('NETWORK', 'Сеть недоступна. Повторите позже.');
+    }
+    final normalized = email.trim().toLowerCase();
+    final pass = password.trim();
+    if (!_registeredEmails.contains(normalized) ||
+        _passwords[normalized] != pass) {
+      throw AuthException('INVALID_CREDENTIALS', 'Неверный логин или пароль');
+    }
     return UserSession(
       token:
           'mock-token:${normalized.hashCode}:${DateTime.now().millisecondsSinceEpoch}',

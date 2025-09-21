@@ -5,7 +5,10 @@ class SessionCubit extends Cubit<UserSession?> {
   SessionCubit() : super(null);
 
   void save(UserSession s) => emit(s);
+
   void clear() => emit(null);
+
   bool get isAuthorized => state != null;
+
   String? get role => state?.role;
 }
