@@ -64,4 +64,28 @@ class MockAuthService implements AuthService {
       email: normalized,
     );
   }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String newPassword,
+  }) async {
+    await Future<void>.delayed(latency);
+    if (failNetwork) {
+      throw AuthException('NETWORK', 'Сеть недоступна. Повторите позже.');
+    }
+
+    final normalized = email.trim().toLowerCase();
+    if (!_registeredEmails.contains(normalized)) {
+      throw AuthException('EMAIL_NOT_FOUND', 'Email не найден');
+    }
+    if (newPassword.trim().length < 6) {
+      throw AuthException(
+        'WEAK_PASSWORD',
+        'Пароль должен быть не короче 6 символов.',
+      );
+    }
+
+    _passwords[normalized] = newPassword.trim();
+  }
 }

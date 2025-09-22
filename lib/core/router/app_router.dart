@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
+import 'package:heros_journey/features/auth_forgot/bloc/forgot_bloc.dart';
+import 'package:heros_journey/features/auth_forgot/view/forgot_screen.dart';
 import 'package:heros_journey/features/auth_login/bloc/login_bloc.dart';
 import 'package:heros_journey/features/auth_login/view/login_screen.dart';
 import 'package:heros_journey/features/auth_registration/bloc/registration_bloc.dart';
@@ -37,6 +39,14 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const DashboardScreen(),
+        );
+      case '/forgot':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (ctx) => BlocProvider(
+            create: (_) => ForgotBloc(auth: ServiceRegistry.auth),
+            child: const ForgotScreen(),
+          ),
         );
       default:
         return _redirect('/login');

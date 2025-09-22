@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:heros_journey/features/auth_login/bloc/login_bloc.dart';
-import 'package:heros_journey/features/auth_login/bloc/login_event.dart';
+import 'package:heros_journey/features/auth_forgot/bloc/forgot_bloc.dart';
+import 'package:heros_journey/features/auth_forgot/bloc/forgot_event.dart';
+import 'package:heros_journey/features/auth_forgot/bloc/forgot_state.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+
+class ForgotScreen extends StatefulWidget {
+  const ForgotScreen({super.key});
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<ForgotScreen> createState() => _ForgotScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _ForgotScreenState extends State<ForgotScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
@@ -23,7 +25,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
-    context.read<LoginBloc>().add(LoginSubmitted(email: _emailCtrl.text, password: _passCtrl.text));
+    context.read<ForgotBloc>().add(
+      ForgotSubmitted(email: _emailCtrl.text, newPassword: _passCtrl.text),
+    );
   }
 
   @override
@@ -38,11 +42,14 @@ class _LoginScreenState extends State<LoginScreen> {
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: BlocConsumer<LoginBloc, LoginState>(
+              child: BlocConsumer<ForgotBloc, ForgotState>(
                 listenWhen: (p, c) => p.isSuccess != c.isSuccess,
                 listener: (context, state) {
                   if (state.isSuccess) {
-                    Navigator.of(context).pushReplacementNamed('/dashboard');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Пароль изменён')),
+                    );
+                    Navigator.of(context).pushReplacementNamed('/login');
                   }
                 },
                 builder: (context, state) {
@@ -52,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('Вход (Психолог)', style: theme.textTheme.headlineSmall),
+                        Text('Восстановление пароля', style: theme.textTheme.headlineSmall),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _emailCtrl,
@@ -61,8 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: const InputDecoration(labelText: 'Email'),
                           validator: (v) {
                             final val = v?.trim() ?? '';
-                            if (val.isEmpty) return 'Введите E‑mail';
-                            if (!val.contains('@')) return 'Некорректный E‑mail';
+                            if (val.isEmpty) return 'Введите E-mail';
+                            if (!val.contains('@')) return 'Некорректный E-mail';
                             return null;
                           },
                         ),
@@ -70,8 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: _passCtrl,
                           obscureText: true,
-                          autofillHints: const [AutofillHints.password],
-                          decoration: const InputDecoration(labelText: 'Пароль'),
+                          decoration: const InputDecoration(labelText: 'Новый пароль'),
                           validator: (v) {
                             final val = v?.trim() ?? '';
                             if (val.isEmpty) return 'Введите пароль';
@@ -92,34 +98,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: state.isLoading ? null : () => _submit(context),
                                 child: state.isLoading
                                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                    : const Text('Войти'),
+                                    : const Text('Сохранить новый пароль'),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            TextButton(
-                              onPressed: state.isLoading
-                                  ? null
-                                  : () {
-                                context.read<LoginBloc>().add(LoginGoRegister());
-                                Navigator.of(context).pushReplacementNamed('/register');
-                              },
-                              child: const Text('Регистрация'),
-                            ),
-                            TextButton(
-                              onPressed: state.isLoading
-                                  ? null
-                                  : () {
-                                context.read<LoginBloc>().add(LoginForgotPassword());
-                                Navigator.of(context).pushReplacementNamed('/forgot');
-                              },
-                              child: const Text('Забыли пароль'),
-                            ),
-                          ],
+                        TextButton.icon(
+                          onPressed: state.isLoading
+                              ? null
+                              : () {
+                            context.read<ForgotBloc>().add(ForgotBackPressed());
+                            Navigator.of(context).pushReplacementNamed('/login');
+                          },
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text('Назад'),
                         ),
                       ],
                     ),
