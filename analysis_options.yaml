@@ -1,0 +1,50 @@
+# analysis_options.yaml
+# PsyWell — Psychologist Web (Flutter, MOCK, BLoC)
+# База: flutter_lints + дополнительные правила команды
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    # Включаем нулл-безопасность и актуальные проверки (Dart 3 по умолчанию)
+    strict-inference: true
+    strict-raw-types: true
+
+  errors:
+    # Подкручиваем уровни сообщений
+    unused_import: warning
+    dead_code: warning
+    invalid_override_of_non_virtual_member: warning
+    missing_required_param: error
+    missing_return: error
+
+  exclude:
+    # Исключаем генерируемые/артефакты
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.mocks.dart"
+    - "build/**"
+
+linter:
+  rules:
+    #  Стиль импортов и порядок директив
+    always_use_package_imports: true
+    directives_ordering: true
+    prefer_relative_imports: false
+
+    #  Константы и финальные локальные переменные — меньше «дрожи» виджетов
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_locals: true
+
+    #  Читаемость и аккуратность
+    always_declare_return_types: true
+    avoid_redundant_argument_values: true
+    unnecessary_late: true
+    use_super_parameters: true
+
+    #  Часто полезные в Flutter-проектах
+    avoid_print: true            # вместо print — Logger
+    avoid_unnecessary_containers: true
+    sized_box_for_whitespace: true
+    use_key_in_widget_constructors: true
