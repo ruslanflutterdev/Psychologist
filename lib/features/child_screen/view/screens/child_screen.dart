@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/models/quest.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
+import 'package:heros_journey/features/child_screen/viewmodel/widgets/difficulty_dropdown.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
 
 class ChildScreen extends StatefulWidget {
@@ -32,6 +33,7 @@ class _ChildScreenState extends State<ChildScreen> {
         childId: widget.childId,
         difficulty: _difficulty,
       );
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -41,7 +43,9 @@ class _ChildScreenState extends State<ChildScreen> {
         ),
       );
     } catch (e) {
-      setState(() => _error = e.toString());
+      if (mounted) {
+        setState(() => _error = e.toString());
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -57,6 +61,50 @@ class _ChildScreenState extends State<ChildScreen> {
           childName: widget.childName,
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader(ThemeData theme) {
+    return Text(
+      'Ребёнок: ${widget.childName} (ID: ${widget.childId})',
+      style: theme.textTheme.titleMedium,
+    );
+  }
+
+  Widget _buildError(ThemeData theme) {
+    if (_error == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        _error!,
+        style: theme.textTheme.bodyMedium!.copyWith(
+          color: theme.colorScheme.error,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FilledButton(
+          onPressed: _isLoading ? null : _assignQuest,
+          child: _isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Назначить квест'),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: _openProgress,
+          icon: const Icon(Icons.bar_chart),
+          label: const Text('Посмотреть прогресс'),
+        ),
+      ],
     );
   }
 
@@ -77,71 +125,22 @@ class _ChildScreenState extends State<ChildScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Ребёнок: ${widget.childName} (ID: ${widget.childId})',
-                    style: theme.textTheme.titleMedium,
-                  ),
+                  _buildHeader(theme),
                   const SizedBox(height: 16),
 
-                  DropdownButtonFormField<QuestDifficulty>(
+                  DifficultyDropdown(
                     value: _difficulty,
-                    decoration: const InputDecoration(
-                      labelText: 'Сложность/Уровень',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: QuestDifficulty.low,
-                        child: Text('Low'),
-                      ),
-                      DropdownMenuItem(
-                        value: QuestDifficulty.medium,
-                        child: Text('Medium'),
-                      ),
-                      DropdownMenuItem(
-                        value: QuestDifficulty.high,
-                        child: Text('High'),
-                      ),
-                    ],
                     onChanged: _isLoading
                         ? null
                         : (v) {
-                            if (v != null) {
-                              setState(() => _difficulty = v);
-                            }
+                            if (v == null) return;
+                            setState(() => _difficulty = v);
                           },
                   ),
 
                   const SizedBox(height: 16),
-                  if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        _error!,
-                        style: theme.textTheme.bodyMedium!.copyWith(
-                          color: theme.colorScheme.error,
-                        ),
-                      ),
-                    ),
-
-                  FilledButton(
-                    onPressed: _isLoading ? null : _assignQuest,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Назначить квест'),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  OutlinedButton.icon(
-                    onPressed: _openProgress,
-                    icon: const Icon(Icons.bar_chart),
-                    label: const Text('Посмотреть прогресс'),
-                  ),
+                  _buildError(theme),
+                  _buildActions(),
                 ],
               ),
             ),
