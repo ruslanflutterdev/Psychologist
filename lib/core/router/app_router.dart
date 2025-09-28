@@ -5,7 +5,7 @@ import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/auth_forgot/view/forgot_screen.dart';
 import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_bloc.dart';
 import 'package:heros_journey/features/auth_login/view/login_screen.dart';
-import 'package:heros_journey/features/auth_login/viewmodel/login_bloc.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.dart';
 import 'package:heros_journey/features/auth_registration/view/registration_screen.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
 import 'package:heros_journey/features/psychologist_screen/view/screens/psychologist_screen.dart';

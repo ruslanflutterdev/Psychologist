@@ -71,8 +71,9 @@ class _ForgotScreenState extends State<ForgotScreen> {
                           validator: (v) {
                             final val = v?.trim() ?? '';
                             if (val.isEmpty) return 'Введите E-mail';
-                            if (!val.contains('@'))
+                            if (!val.contains('@')) {
                               return 'Некорректный E-mail';
+                            }
                             return null;
                           },
                         ),
