@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/errors/auth_exception.dart';
 import 'package:heros_journey/core/models/user_session_model.dart';
-import 'package:heros_journey/core/services/auth_service.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
-import 'package:heros_journey/features/auth_login/bloc/login_event.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/login_event.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/services/auth_service.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AuthService auth;

@@ -1,5 +1,5 @@
-import 'package:heros_journey/core/models/child_model.dart';
-import 'package:heros_journey/core/services/child_service.dart';
+import 'package:heros_journey/features/child_screen/view/models/child_model.dart';
+import 'package:heros_journey/features/child_screen/viewmodel/services/child_service.dart';
 
 class MockChildService implements ChildService {
   final List<ChildModel> _children = const [

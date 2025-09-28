@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:heros_journey/features/auth_login/bloc/login_bloc.dart';
-import 'package:heros_journey/features/auth_login/bloc/login_event.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/login_bloc.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/login_event.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 listenWhen: (p, c) => p.isSuccess != c.isSuccess,
                 listener: (context, state) {
                   if (state.isSuccess) {
-                    Navigator.of(context).pushReplacementNamed('/dashboard');
+                    Navigator.of(context).pushReplacementNamed('/psychologist_screen');
                   }
                 },
                 builder: (context, state) {

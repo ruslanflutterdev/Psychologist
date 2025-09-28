@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:heros_journey/features/auth_forgot/bloc/forgot_bloc.dart';
-import 'package:heros_journey/features/auth_forgot/bloc/forgot_event.dart';
-import 'package:heros_journey/features/auth_forgot/bloc/forgot_state.dart';
+import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_bloc.dart';
+import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_event.dart';
+import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_state.dart';
+
 
 
 class ForgotScreen extends StatefulWidget {

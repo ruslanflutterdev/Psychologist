@@ -13,7 +13,7 @@ class ChildScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Карточка ребёнка')),
+      appBar: AppBar(title: const Text('Карточка ребёнка')),
       body: Center(child: Text('Ребёнок: $childName (ID: $childId)')),
     );
   }

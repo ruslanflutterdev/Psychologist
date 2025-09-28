@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
-import 'package:heros_journey/features/dashboard/view/child_screen.dart';
+import 'package:heros_journey/features/child_screen/view/screens/child_screen.dart';
+
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});

@@ -1,6 +1,6 @@
 import 'package:heros_journey/core/errors/auth_exception.dart';
 import 'package:heros_journey/core/models/user_session_model.dart';
-import 'package:heros_journey/core/services/auth_service.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/services/auth_service.dart';
 
 class MockAuthService implements AuthService {
   final Set<String> _registeredEmails = {'busy@school.kz'};

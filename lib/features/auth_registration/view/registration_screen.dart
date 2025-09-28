@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_bloc.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_event.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_state.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_event.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_state.dart';
+
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -45,7 +46,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 listenWhen: (p, c) => p.isSuccess != c.isSuccess,
                 listener: (context, state) {
                   if (state.isSuccess) {
-                    Navigator.of(context).pushReplacementNamed('/dashboard');
+                    Navigator.of(context).pushReplacementNamed('/psychologist_screen');
                   }
                 },
                 builder: (context, state) {
