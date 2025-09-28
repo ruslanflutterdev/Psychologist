@@ -29,6 +29,5 @@ class ForgotBloc extends Bloc<ForgotEvent, ForgotState> {
     }
   }
 
-  void _onBack(ForgotBackPressed e, Emitter<ForgotState> emit) {
-  }
+  void _onBack(ForgotBackPressed e, Emitter<ForgotState> emit) {}
 }

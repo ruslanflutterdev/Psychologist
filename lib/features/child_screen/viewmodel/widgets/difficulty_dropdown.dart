@@ -20,9 +20,9 @@ class DifficultyDropdown extends StatelessWidget {
         border: OutlineInputBorder(),
       ),
       items: const [
-        DropdownMenuItem(value: QuestDifficulty.low,    child: Text('Low')),
+        DropdownMenuItem(value: QuestDifficulty.low, child: Text('Low')),
         DropdownMenuItem(value: QuestDifficulty.medium, child: Text('Medium')),
-        DropdownMenuItem(value: QuestDifficulty.high,   child: Text('High')),
+        DropdownMenuItem(value: QuestDifficulty.high, child: Text('High')),
       ],
       onChanged: onChanged,
     );

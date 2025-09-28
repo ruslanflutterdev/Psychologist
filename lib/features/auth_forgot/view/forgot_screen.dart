@@ -4,8 +4,6 @@ import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_bloc.dart';
 import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_event.dart';
 import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_state.dart';
 
-
-
 class ForgotScreen extends StatefulWidget {
   const ForgotScreen({super.key});
   @override
@@ -60,7 +58,10 @@ class _ForgotScreenState extends State<ForgotScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('Восстановление пароля', style: theme.textTheme.headlineSmall),
+                        Text(
+                          'Восстановление пароля',
+                          style: theme.textTheme.headlineSmall,
+                        ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _emailCtrl,
@@ -70,7 +71,8 @@ class _ForgotScreenState extends State<ForgotScreen> {
                           validator: (v) {
                             final val = v?.trim() ?? '';
                             if (val.isEmpty) return 'Введите E-mail';
-                            if (!val.contains('@')) return 'Некорректный E-mail';
+                            if (!val.contains('@'))
+                              return 'Некорректный E-mail';
                             return null;
                           },
                         ),
@@ -78,7 +80,9 @@ class _ForgotScreenState extends State<ForgotScreen> {
                         TextFormField(
                           controller: _passCtrl,
                           obscureText: true,
-                          decoration: const InputDecoration(labelText: 'Новый пароль'),
+                          decoration: const InputDecoration(
+                            labelText: 'Новый пароль',
+                          ),
                           validator: (v) {
                             final val = v?.trim() ?? '';
                             if (val.isEmpty) return 'Введите пароль';
@@ -90,15 +94,28 @@ class _ForgotScreenState extends State<ForgotScreen> {
                         if (state.errorMessage != null)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(state.errorMessage!, style: theme.textTheme.bodyMedium!.copyWith(color: theme.colorScheme.error)),
+                            child: Text(
+                              state.errorMessage!,
+                              style: theme.textTheme.bodyMedium!.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
                           ),
                         Row(
                           children: [
                             Expanded(
                               child: FilledButton(
-                                onPressed: state.isLoading ? null : () => _submit(context),
+                                onPressed: state.isLoading
+                                    ? null
+                                    : () => _submit(context),
                                 child: state.isLoading
-                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : const Text('Сохранить новый пароль'),
                               ),
                             ),
@@ -109,9 +126,13 @@ class _ForgotScreenState extends State<ForgotScreen> {
                           onPressed: state.isLoading
                               ? null
                               : () {
-                            context.read<ForgotBloc>().add(ForgotBackPressed());
-                            Navigator.of(context).pushReplacementNamed('/login');
-                          },
+                                  context.read<ForgotBloc>().add(
+                                    ForgotBackPressed(),
+                                  );
+                                  Navigator.of(
+                                    context,
+                                  ).pushReplacementNamed('/login');
+                                },
                           icon: const Icon(Icons.arrow_back),
                           label: const Text('Назад'),
                         ),

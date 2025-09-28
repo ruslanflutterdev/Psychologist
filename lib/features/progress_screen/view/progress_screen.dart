@@ -14,7 +14,6 @@ class ProgressScreen extends StatelessWidget {
     required this.childName,
   });
 
-
   Future<ChildProgressModel> _load() =>
       ServiceRegistry.progress.getChildProgress(childId);
 
@@ -39,8 +38,9 @@ class ProgressScreen extends StatelessWidget {
                   return Center(
                     child: Text(
                       'Ошибка загрузки: ${snap.error}',
-                      style: theme.textTheme.bodyMedium!
-                          .copyWith(color: theme.colorScheme.error),
+                      style: theme.textTheme.bodyMedium!.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
                     ),
                   );
                 }

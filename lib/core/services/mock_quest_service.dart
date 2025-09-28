@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:heros_journey/core/models/quest.dart';
 import 'package:heros_journey/core/services/quest_service.dart';
 
-
 class MockQuestService implements QuestService {
   Duration latency = const Duration(milliseconds: 600);
   bool failNetwork = false;

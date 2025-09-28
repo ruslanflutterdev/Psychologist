@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/features/auth_login/viewmodel/login_bloc.dart';
 import 'package:heros_journey/features/auth_login/viewmodel/login_event.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -24,7 +23,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
-    context.read<LoginBloc>().add(LoginSubmitted(email: _emailCtrl.text, password: _passCtrl.text));
+    context.read<LoginBloc>().add(
+      LoginSubmitted(email: _emailCtrl.text, password: _passCtrl.text),
+    );
   }
 
   @override
@@ -43,7 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 listenWhen: (p, c) => p.isSuccess != c.isSuccess,
                 listener: (context, state) {
                   if (state.isSuccess) {
-                    Navigator.of(context).pushReplacementNamed('/psychologist_screen');
+                    Navigator.of(
+                      context,
+                    ).pushReplacementNamed('/psychologist_screen');
                   }
                 },
                 builder: (context, state) {
@@ -53,7 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text('Вход (Психолог)', style: theme.textTheme.headlineSmall),
+                        Text(
+                          'Вход (Психолог)',
+                          style: theme.textTheme.headlineSmall,
+                        ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _emailCtrl,
@@ -63,7 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           validator: (v) {
                             final val = v?.trim() ?? '';
                             if (val.isEmpty) return 'Введите E‑mail';
-                            if (!val.contains('@')) return 'Некорректный E‑mail';
+                            if (!val.contains('@'))
+                              return 'Некорректный E‑mail';
                             return null;
                           },
                         ),
@@ -72,7 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _passCtrl,
                           obscureText: true,
                           autofillHints: const [AutofillHints.password],
-                          decoration: const InputDecoration(labelText: 'Пароль'),
+                          decoration: const InputDecoration(
+                            labelText: 'Пароль',
+                          ),
                           validator: (v) {
                             final val = v?.trim() ?? '';
                             if (val.isEmpty) return 'Введите пароль';
@@ -84,15 +93,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (state.errorMessage != null)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(state.errorMessage!, style: theme.textTheme.bodyMedium!.copyWith(color: theme.colorScheme.error)),
+                            child: Text(
+                              state.errorMessage!,
+                              style: theme.textTheme.bodyMedium!.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
                           ),
                         Row(
                           children: [
                             Expanded(
                               child: FilledButton(
-                                onPressed: state.isLoading ? null : () => _submit(context),
+                                onPressed: state.isLoading
+                                    ? null
+                                    : () => _submit(context),
                                 child: state.isLoading
-                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
                                     : const Text('Войти'),
                               ),
                             ),
@@ -106,18 +128,26 @@ class _LoginScreenState extends State<LoginScreen> {
                               onPressed: state.isLoading
                                   ? null
                                   : () {
-                                context.read<LoginBloc>().add(LoginGoRegister());
-                                Navigator.of(context).pushReplacementNamed('/register');
-                              },
+                                      context.read<LoginBloc>().add(
+                                        LoginGoRegister(),
+                                      );
+                                      Navigator.of(
+                                        context,
+                                      ).pushReplacementNamed('/register');
+                                    },
                               child: const Text('Регистрация'),
                             ),
                             TextButton(
                               onPressed: state.isLoading
                                   ? null
                                   : () {
-                                context.read<LoginBloc>().add(LoginForgotPassword());
-                                Navigator.of(context).pushReplacementNamed('/forgot');
-                              },
+                                      context.read<LoginBloc>().add(
+                                        LoginForgotPassword(),
+                                      );
+                                      Navigator.of(
+                                        context,
+                                      ).pushReplacementNamed('/forgot');
+                                    },
                               child: const Text('Забыли пароль'),
                             ),
                           ],

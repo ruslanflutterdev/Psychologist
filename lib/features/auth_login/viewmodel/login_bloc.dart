@@ -9,25 +9,45 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AuthService auth;
   final SessionCubit sessionCubit;
 
-  LoginBloc({required this.auth, required this.sessionCubit}) : super(LoginState.initial) {
+  LoginBloc({required this.auth, required this.sessionCubit})
+    : super(LoginState.initial) {
     on<LoginSubmitted>(_onSubmit);
-    on<LoginGoRegister>((event, emit) {/* handled in View */});
-    on<LoginForgotPassword>((event, emit) {/* handled in View */});
+    on<LoginGoRegister>((event, emit) {
+      /* handled in View */
+    });
+    on<LoginForgotPassword>((event, emit) {
+      /* handled in View */
+    });
   }
 
   Future<void> _onSubmit(LoginSubmitted e, Emitter<LoginState> emit) async {
     emit(state.copyWith(isLoading: true, isSuccess: false));
     try {
-      final UserSessionModel session = await auth.loginPsychologist(email: e.email, password: e.password);
+      final UserSessionModel session = await auth.loginPsychologist(
+        email: e.email,
+        password: e.password,
+      );
       if (session.role != 'psych') {
         throw AuthException('INVALID_CREDENTIALS', 'Неверный логин или пароль');
       }
       sessionCubit.save(session);
       emit(state.copyWith(isLoading: false, isSuccess: true));
     } on AuthException catch (err) {
-      emit(state.copyWith(isLoading: false, isSuccess: false, errorMessage: err.message));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          isSuccess: false,
+          errorMessage: err.message,
+        ),
+      );
     } catch (_) {
-      emit(state.copyWith(isLoading: false, isSuccess: false, errorMessage: 'Неизвестная ошибка. Повторите попытку.'));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          isSuccess: false,
+          errorMessage: 'Неизвестная ошибка. Повторите попытку.',
+        ),
+      );
     }
   }
 }
