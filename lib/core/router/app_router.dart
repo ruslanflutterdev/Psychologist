@@ -38,7 +38,7 @@ class AppRouter {
       case '/psychologist_screen':
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const DashboardScreen(),
+          builder: (_) => const PsychologistScreen(),
         );
       case '/forgot':
         return MaterialPageRoute(
