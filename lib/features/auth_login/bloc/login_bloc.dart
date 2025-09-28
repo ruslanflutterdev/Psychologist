@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/errors/auth_exception.dart';
-import 'package:heros_journey/core/models/user_session.dart';
+import 'package:heros_journey/core/models/user_session_model.dart';
 import 'package:heros_journey/core/services/auth_service.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/auth_login/bloc/login_event.dart';
@@ -18,7 +18,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Future<void> _onSubmit(LoginSubmitted e, Emitter<LoginState> emit) async {
     emit(state.copyWith(isLoading: true, isSuccess: false));
     try {
-      final UserSession session = await auth.loginPsychologist(email: e.email, password: e.password);
+      final UserSessionModel session = await auth.loginPsychologist(email: e.email, password: e.password);
       if (session.role != 'psych') {
         throw AuthException('INVALID_CREDENTIALS', 'Неверный логин или пароль');
       }

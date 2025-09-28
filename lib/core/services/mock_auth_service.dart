@@ -1,5 +1,5 @@
 import 'package:heros_journey/core/errors/auth_exception.dart';
-import 'package:heros_journey/core/models/user_session.dart';
+import 'package:heros_journey/core/models/user_session_model.dart';
 import 'package:heros_journey/core/services/auth_service.dart';
 
 class MockAuthService implements AuthService {
@@ -9,7 +9,7 @@ class MockAuthService implements AuthService {
   bool failNetwork = false;
 
   @override
-  Future<UserSession> registerPsychologist({
+  Future<UserSessionModel> registerPsychologist({
     required String email,
     required String password,
   }) async {
@@ -34,7 +34,7 @@ class MockAuthService implements AuthService {
 
     _registeredEmails.add(normalized);
     _passwords[normalized] = password.trim();
-    return UserSession(
+    return UserSessionModel(
       token:
           'mock-token:${normalized.hashCode}:${DateTime.now().millisecondsSinceEpoch}',
       role: 'psych',
@@ -43,7 +43,7 @@ class MockAuthService implements AuthService {
   }
 
   @override
-  Future<UserSession> loginPsychologist({
+  Future<UserSessionModel> loginPsychologist({
     required String email,
     required String password,
   }) async {
@@ -57,7 +57,7 @@ class MockAuthService implements AuthService {
         _passwords[normalized] != pass) {
       throw AuthException('INVALID_CREDENTIALS', 'Неверный логин или пароль');
     }
-    return UserSession(
+    return UserSessionModel(
       token:
           'mock-token:${normalized.hashCode}:${DateTime.now().millisecondsSinceEpoch}',
       role: 'psych',

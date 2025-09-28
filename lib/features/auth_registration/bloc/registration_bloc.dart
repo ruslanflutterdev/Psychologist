@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/errors/auth_exception.dart';
-import 'package:heros_journey/core/models/user_session.dart';
+import 'package:heros_journey/core/models/user_session_model.dart';
 import 'package:heros_journey/core/services/auth_service.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/auth_registration/bloc/registration_event.dart';
@@ -23,7 +23,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   ) async {
     emit(state.copyWith(isLoading: true, isSuccess: false));
     try {
-      final UserSession session = await auth.registerPsychologist(
+      final UserSessionModel session = await auth.registerPsychologist(
         email: e.email,
         password: e.password,
       );
