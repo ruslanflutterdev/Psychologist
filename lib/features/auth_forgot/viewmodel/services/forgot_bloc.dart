@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/errors/auth_exception.dart';
-import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_event.dart';
-import 'package:heros_journey/features/auth_forgot/viewmodel/forgot_state.dart';
+import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_event.dart';
+import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_state.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/services/auth_service.dart';
 
 class ForgotBloc extends Bloc<ForgotEvent, ForgotState> {
