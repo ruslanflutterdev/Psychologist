@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/models/quest.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
+import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
 
 class ChildScreen extends StatefulWidget {
   final String childId;
@@ -46,6 +47,17 @@ class _ChildScreenState extends State<ChildScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _openProgress() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProgressScreen(
+          childId: widget.childId,
+          childName: widget.childName,
+        ),
+      ),
+    );
   }
 
   @override
@@ -121,6 +133,14 @@ class _ChildScreenState extends State<ChildScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Назначить квест'),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  OutlinedButton.icon(
+                    onPressed: _openProgress,
+                    icon: const Icon(Icons.bar_chart),
+                    label: const Text('Посмотреть прогресс'),
                   ),
                 ],
               ),
