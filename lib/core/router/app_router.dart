@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
-import 'package:heros_journey/features/auth_forgot/bloc/forgot_bloc.dart';
 import 'package:heros_journey/features/auth_forgot/view/forgot_screen.dart';
-import 'package:heros_journey/features/auth_login/bloc/login_bloc.dart';
+import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_bloc.dart';
 import 'package:heros_journey/features/auth_login/view/login_screen.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_bloc.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.dart';
 import 'package:heros_journey/features/auth_registration/view/registration_screen.dart';
-import 'package:heros_journey/features/dashboard/view/dashboard_screen.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
+import 'package:heros_journey/features/psychologist_screen/view/screens/psychologist_screen.dart';
 
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -35,10 +35,10 @@ class AppRouter {
             child: const RegistrationScreen(),
           ),
         );
-      case '/dashboard':
+      case '/psychologist_screen':
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const DashboardScreen(),
+          builder: (_) => const PsychologistScreen(),
         );
       case '/forgot':
         return MaterialPageRoute(

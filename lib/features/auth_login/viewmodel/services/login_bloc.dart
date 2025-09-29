@@ -1,32 +1,35 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/errors/auth_exception.dart';
-import 'package:heros_journey/core/models/user_session.dart';
-import 'package:heros_journey/core/services/auth_service.dart';
+import 'package:heros_journey/core/models/user_session_model.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_event.dart';
-import 'package:heros_journey/features/auth_registration/bloc/registration_state.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/services/login_event.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/services/auth_service.dart';
 
-
-class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
+class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AuthService auth;
   final SessionCubit sessionCubit;
 
-  RegistrationBloc({required this.auth, required this.sessionCubit})
-    : super(RegistrationState.initial) {
-    on<RegistrationSubmitted>(_onSubmit);
-    on<RegistrationBackPressed>(_onBack);
+  LoginBloc({required this.auth, required this.sessionCubit})
+    : super(LoginState.initial) {
+    on<LoginSubmitted>(_onSubmit);
+    on<LoginGoRegister>((event, emit) {
+      /* handled in View */
+    });
+    on<LoginForgotPassword>((event, emit) {
+      /* handled in View */
+    });
   }
 
-  Future<void> _onSubmit(
-    RegistrationSubmitted e,
-    Emitter<RegistrationState> emit,
-  ) async {
+  Future<void> _onSubmit(LoginSubmitted e, Emitter<LoginState> emit) async {
     emit(state.copyWith(isLoading: true, isSuccess: false));
     try {
-      final UserSession session = await auth.registerPsychologist(
+      final UserSessionModel session = await auth.loginPsychologist(
         email: e.email,
         password: e.password,
       );
+      if (session.role != 'psych') {
+        throw AuthException('INVALID_CREDENTIALS', 'Неверный логин или пароль');
+      }
       sessionCubit.save(session);
       emit(state.copyWith(isLoading: false, isSuccess: true));
     } on AuthException catch (err) {
@@ -47,6 +50,4 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
       );
     }
   }
-
-  void _onBack(RegistrationBackPressed e, Emitter<RegistrationState> emit) {}
 }
