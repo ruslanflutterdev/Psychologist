@@ -20,6 +20,7 @@ class PsychWebApp extends StatelessWidget {
       create: (_) => SessionCubit(),
       child: MaterialApp(
         title: 'PsyWell – Psychologist Web',
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         initialRoute: '/login',
         onGenerateRoute: AppRouter.onGenerateRoute,
