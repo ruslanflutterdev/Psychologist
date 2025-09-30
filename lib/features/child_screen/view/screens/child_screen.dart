@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/models/quest.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
+import 'package:heros_journey/features/child_screen/view/models/child_model.dart';
+import 'package:heros_journey/features/child_screen/view/models/find_child_by_id.dart';
+import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_actions.dart';
+import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_error_text.dart';
+import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_info_card.dart';
 import 'package:heros_journey/features/child_screen/viewmodel/widgets/difficulty_dropdown.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
 
@@ -23,6 +28,24 @@ class _ChildScreenState extends State<ChildScreen> {
   bool _isLoading = false;
   String? _error;
 
+  ChildModel? _child;
+  bool _loadingChild = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChild();
+  }
+
+  Future<void> _loadChild() async {
+    final c = await findChildById(widget.childId);
+    if (!mounted) return;
+    setState(() {
+      _child = c;
+      _loadingChild = false;
+    });
+  }
+
   Future<void> _assignQuest() async {
     setState(() {
       _isLoading = true;
@@ -33,23 +56,19 @@ class _ChildScreenState extends State<ChildScreen> {
         childId: widget.childId,
         difficulty: _difficulty,
       );
-
       if (!mounted) return;
+      final displayName = _child?.name ?? widget.childName;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Квест назначен (${_difficulty.uiLabel}) для ${widget.childName}',
+            'Квест назначен (${_difficulty.uiLabel}) для $displayName',
           ),
         ),
       );
     } catch (e) {
-      if (mounted) {
-        setState(() => _error = e.toString());
-      }
+      if (mounted) setState(() => _error = e.toString());
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -58,62 +77,18 @@ class _ChildScreenState extends State<ChildScreen> {
       MaterialPageRoute<void>(
         builder: (_) => ProgressScreen(
           childId: widget.childId,
-          childName: widget.childName,
+          childName: _child?.name ?? widget.childName,
         ),
       ),
-    );
-  }
-
-  Widget _buildHeader(ThemeData theme) {
-    return Text(
-      'Ребёнок: ${widget.childName} (ID: ${widget.childId})',
-      style: theme.textTheme.titleMedium,
-    );
-  }
-
-  Widget _buildError(ThemeData theme) {
-    if (_error == null) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        _error!,
-        style: theme.textTheme.bodyMedium!.copyWith(
-          color: theme.colorScheme.error,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        FilledButton(
-          onPressed: _isLoading ? null : _assignQuest,
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Назначить квест'),
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: _openProgress,
-          icon: const Icon(Icons.bar_chart),
-          label: const Text('Посмотреть прогресс'),
-        ),
-      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final title = _child?.name ?? widget.childName;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Карточка ребёнка')),
+      appBar: AppBar(title: Text('Карточка ребёнка — $title')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
@@ -125,9 +100,7 @@ class _ChildScreenState extends State<ChildScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildHeader(theme),
-                  const SizedBox(height: 16),
-
+                  ChildInfoCard(isLoading: _loadingChild, child: _child),
                   DifficultyDropdown(
                     value: _difficulty,
                     onChanged: _isLoading
@@ -137,10 +110,13 @@ class _ChildScreenState extends State<ChildScreen> {
                             setState(() => _difficulty = v);
                           },
                   ),
-
                   const SizedBox(height: 16),
-                  _buildError(theme),
-                  _buildActions(),
+                  ChildErrorText(error: _error),
+                  ChildActions(
+                    isLoading: _isLoading,
+                    onAssignQuest: _assignQuest,
+                    onOpenProgress: _openProgress,
+                  ),
                 ],
               ),
             ),
