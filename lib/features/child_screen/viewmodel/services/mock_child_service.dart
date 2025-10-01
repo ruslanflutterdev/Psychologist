@@ -3,11 +3,41 @@ import 'package:heros_journey/features/child_screen/viewmodel/services/child_ser
 
 class MockChildService implements ChildService {
   final List<ChildModel> _children = const [
-    ChildModel(id: '1', name: 'Иван'),
-    ChildModel(id: '2', name: 'Алина'),
-    ChildModel(id: '3', name: 'Марат'),
-    ChildModel(id: '4', name: 'Саша'),
-    ChildModel(id: '5', name: 'Диана'),
+    ChildModel(
+      id: '1',
+      firstName: 'Иван',
+      lastName: 'Петров',
+      age: 10,
+      gender: ChildGender.male,
+    ),
+    ChildModel(
+      id: '2',
+      firstName: 'Алина',
+      lastName: 'Садыкова',
+      age: 11,
+      gender: ChildGender.female,
+    ),
+    ChildModel(
+      id: '3',
+      firstName: 'Марат',
+      lastName: 'Нурланов',
+      age: 9,
+      gender: ChildGender.male,
+    ),
+    ChildModel(
+      id: '4',
+      firstName: 'Саша',
+      lastName: 'Иванова',
+      age: 12,
+      gender: ChildGender.female,
+    ),
+    ChildModel(
+      id: '5',
+      firstName: 'Диана',
+      lastName: 'Ахметова',
+      age: 10,
+      gender: ChildGender.female,
+    ),
   ];
 
   @override
