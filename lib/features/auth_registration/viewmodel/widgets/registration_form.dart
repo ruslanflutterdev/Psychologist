@@ -3,6 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_event.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_state.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/consent_checkbox.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/consent_row.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/registration_back_button.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/registration_email_field.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/registration_password_field.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/registration_submit_button.dart';
 
 class RegistrationForm extends StatefulWidget {
   final RegistrationState state;
@@ -17,6 +23,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _emailCtrl;
   late final TextEditingController _passCtrl;
+  bool _consentChecked = false;
 
   @override
   void initState() {
@@ -39,8 +46,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
     );
   }
 
-  void _goBack() {
-    Navigator.of(context).pushReplacementNamed('/login');
+  bool get _canSubmit => _consentChecked && !widget.state.isLoading;
+
+  void _openAgreement() {
+    Navigator.of(context).pushNamed('/agreement');
   }
 
   @override
@@ -56,33 +65,18 @@ class _RegistrationFormState extends State<RegistrationForm> {
         children: [
           Text('Регистрация (Психолог)', style: theme.textTheme.headlineSmall),
           const SizedBox(height: 16),
-
-          TextFormField(
-            controller: _emailCtrl,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'Email'),
-            validator: (v) {
-              final val = v?.trim() ?? '';
-              if (val.isEmpty) return 'Введите E-mail';
-              if (!val.contains('@')) return 'Некорректный E-mail';
-              return null;
-            },
-          ),
+          RegistrationEmailField(controller: _emailCtrl),
           const SizedBox(height: 12),
-
-          TextFormField(
-            controller: _passCtrl,
-            obscureText: true,
-            decoration: const InputDecoration(labelText: 'Пароль'),
-            validator: (v) {
-              final val = v?.trim() ?? '';
-              if (val.isEmpty) return 'Введите пароль';
-              if (val.length < 6) return 'Минимум 6 символов';
-              return null;
-            },
+          RegistrationPasswordField(controller: _passCtrl),
+          const SizedBox(height: 12),
+          ConsentRow(
+            checkbox: ConsentCheckbox(
+              value: _consentChecked,
+              onChanged: (v) => setState(() => _consentChecked = v),
+            ),
+            onOpenAgreement: _openAgreement,
           ),
           const SizedBox(height: 16),
-
           if (state.errorMessage != null)
             Text(
               state.errorMessage!,
@@ -92,23 +86,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
             ),
 
           const SizedBox(height: 8),
-          FilledButton(
-            onPressed: state.isLoading ? null : _submit,
-            child: state.isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Зарегистрироваться'),
+          RegistrationSubmitButton(
+            enabled: _canSubmit,
+            isLoading: state.isLoading,
+            onPressed: _submit,
           ),
           const SizedBox(height: 8),
-
-          TextButton.icon(
-            onPressed: state.isLoading ? null : _goBack,
-            icon: const Icon(Icons.arrow_back),
-            label: const Text('Назад'),
-          ),
+          const RegistrationBackButton(),
         ],
       ),
     );
