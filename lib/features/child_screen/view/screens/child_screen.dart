@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/features/child_screen/view/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/view/models/find_child_by_id.dart';
-import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_actions.dart';
+import 'package:heros_journey/features/child_screen/viewmodel/widgets/assign_quest_dialog.dart';
 import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_error_text.dart';
 import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_info_card.dart';
+import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_quests_section.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
+
 
 class ChildScreen extends StatefulWidget {
   final String childId;
@@ -22,7 +25,7 @@ class ChildScreen extends StatefulWidget {
 }
 
 class _ChildScreenState extends State<ChildScreen> {
-  bool _isLoading = false;
+  bool _isAssigning = false;
   String? _error;
 
   ChildModel? _child;
@@ -52,24 +55,32 @@ class _ChildScreenState extends State<ChildScreen> {
     }
   }
 
-  Future<void> _assignQuest() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _assignQuestFlow() async {
+    setState(() => _isAssigning = true);
     try {
-      await ServiceRegistry.quest.assignQuest(childId: widget.childId);
-      if (!mounted) return;
-      final displayName = _child?.name ?? widget.childName;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Квест назначен для $displayName')),
+      final quest = await showDialog<Quest>(
+        context: context,
+        builder: (_) =>
+            AssignQuestDialog(catalog: ServiceRegistry.questCatalog),
       );
+      if (!mounted) return;
+      if (quest != null) {
+        await ServiceRegistry.childQuests.assignQuest(
+          childId: widget.childId,
+          quest: quest,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Назначен квест: ${quest.title}')),
+        );
+        setState(
+          () {},
+        );
+      }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isAssigning = false);
     }
   }
 
@@ -89,29 +100,45 @@ class _ChildScreenState extends State<ChildScreen> {
     final title = _child?.name ?? widget.childName;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Карточка ребёнка — $title')),
+      appBar: AppBar(
+        title: Text('Карточка ребёнка — $title'),
+        actions: [
+          IconButton(
+            onPressed: _openProgress,
+            icon: const Icon(Icons.bar_chart),
+            tooltip: 'Прогресс',
+          ),
+          const SizedBox(width: 4),
+          TextButton.icon(
+            onPressed: _isAssigning ? null : _assignQuestFlow,
+            icon: const Icon(Icons.add),
+            label: const Text('Добавить квест'),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: Card(
-            margin: const EdgeInsets.all(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ChildInfoCard(isLoading: _loadingChild, child: _child),
-                  const SizedBox(height: 16),
-                  ChildErrorText(error: _error),
-                  ChildActions(
-                    isLoading: _isLoading,
-                    onAssignQuest: _assignQuest,
-                    onOpenProgress: _openProgress,
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              ChildInfoCard(isLoading: _loadingChild, child: _child),
+              const SizedBox(height: 8),
+              ChildErrorText(error: _error),
+              const SizedBox(height: 8),
+              Card(
+                elevation: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ChildQuestsSection(
+                    childId: widget.childId,
+                    service: ServiceRegistry.childQuests,
+                    onRefreshAfterChange: () => setState(() {}),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
