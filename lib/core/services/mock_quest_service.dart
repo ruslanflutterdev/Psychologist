@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:heros_journey/core/models/quest.dart';
 import 'package:heros_journey/core/services/quest_service.dart';
 
 class MockQuestService implements QuestService {
@@ -7,10 +6,7 @@ class MockQuestService implements QuestService {
   bool failNetwork = false;
 
   @override
-  Future<void> assignQuest({
-    required String childId,
-    required QuestDifficulty difficulty,
-  }) async {
+  Future<void> assignQuest({required String childId}) async {
     await Future<void>.delayed(latency);
 
     if (failNetwork) {
@@ -19,7 +15,6 @@ class MockQuestService implements QuestService {
 
     final payload = <String, dynamic>{
       'childId': childId,
-      'difficulty': difficulty.wireValue,
       'assignedAt': DateTime.now().toIso8601String(),
     };
     print('MOCK POST /assign-quest payload=$payload');

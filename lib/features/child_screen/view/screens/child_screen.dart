@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:heros_journey/core/models/quest.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/features/child_screen/view/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/view/models/find_child_by_id.dart';
 import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_actions.dart';
 import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_error_text.dart';
 import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_info_card.dart';
-import 'package:heros_journey/features/child_screen/viewmodel/widgets/difficulty_dropdown.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
 
 class ChildScreen extends StatefulWidget {
@@ -24,7 +22,6 @@ class ChildScreen extends StatefulWidget {
 }
 
 class _ChildScreenState extends State<ChildScreen> {
-  QuestDifficulty _difficulty = QuestDifficulty.medium;
   bool _isLoading = false;
   String? _error;
 
@@ -38,12 +35,21 @@ class _ChildScreenState extends State<ChildScreen> {
   }
 
   Future<void> _loadChild() async {
-    final c = await findChildById(widget.childId);
-    if (!mounted) return;
-    setState(() {
-      _child = c;
-      _loadingChild = false;
-    });
+    try {
+      final c = await findChildById(widget.childId);
+      if (!mounted) return;
+      setState(() {
+        _child = c;
+        _loadingChild = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _child = null;
+        _loadingChild = false;
+        _error = e.toString();
+      });
+    }
   }
 
   Future<void> _assignQuest() async {
@@ -52,23 +58,18 @@ class _ChildScreenState extends State<ChildScreen> {
       _error = null;
     });
     try {
-      await ServiceRegistry.quest.assignQuest(
-        childId: widget.childId,
-        difficulty: _difficulty,
-      );
+      await ServiceRegistry.quest.assignQuest(childId: widget.childId);
       if (!mounted) return;
       final displayName = _child?.name ?? widget.childName;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Квест назначен (${_difficulty.uiLabel}) для $displayName',
-          ),
-        ),
+        SnackBar(content: Text('Квест назначен для $displayName')),
       );
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -101,15 +102,6 @@ class _ChildScreenState extends State<ChildScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ChildInfoCard(isLoading: _loadingChild, child: _child),
-                  DifficultyDropdown(
-                    value: _difficulty,
-                    onChanged: _isLoading
-                        ? null
-                        : (v) {
-                            if (v == null) return;
-                            setState(() => _difficulty = v);
-                          },
-                  ),
                   const SizedBox(height: 16),
                   ChildErrorText(error: _error),
                   ChildActions(
