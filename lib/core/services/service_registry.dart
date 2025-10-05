@@ -1,3 +1,5 @@
+import 'package:heros_journey/core/services/agreement_service.dart';
+import 'package:heros_journey/core/services/mock_agreement_service.dart';
 import 'package:heros_journey/core/services/mock_quest_service.dart';
 import 'package:heros_journey/core/services/quest_service.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/services/auth_service.dart';
@@ -15,6 +17,7 @@ class ServiceRegistry {
   static late QuestService quest;
   static late ProgressService progress;
   static late PsychologistService psychologist;
+  static late AgreementService agreement;
 
   static void initMocks() {
     auth = MockAuthService();
@@ -22,5 +25,6 @@ class ServiceRegistry {
     quest = MockQuestService();
     progress = MockProgressService();
     psychologist = MockPsychologistService();
+    agreement = const MockAgreementService();
   }
 }
