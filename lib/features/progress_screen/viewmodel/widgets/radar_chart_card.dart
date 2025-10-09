@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:heros_journey/features/child_screen/view/models/child_progress_model.dart';
+import 'package:heros_journey/features/child_screen/models/child_progress_model.dart';
 
 class RadarChartCard extends StatelessWidget {
   final ChildProgressModel data;

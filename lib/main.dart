@@ -4,10 +4,18 @@ import 'package:heros_journey/core/router/app_router.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/core/theme/app_theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  ServiceRegistry.initMocks();
+
+  await Supabase.initialize(
+    url: 'https://gaelyvhlqvqgjyiqkrqf.supabase.co',
+    anonKey: '<prefer publishable key instead of anon key for mobile and desktop apps>',
+  );
+
+  ServiceRegistry.initSupabaseAuth();
+
   runApp(const PsychWebApp());
 }
 
