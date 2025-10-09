@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
-import 'package:heros_journey/features/child_screen/view/models/child_model.dart';
-import 'package:heros_journey/features/child_screen/view/models/find_child_by_id.dart';
-import 'package:heros_journey/features/child_screen/viewmodel/widgets/assign_quest_dialog.dart';
-import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_error_text.dart';
-import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_info_card.dart';
-import 'package:heros_journey/features/child_screen/viewmodel/widgets/child_quests_section.dart';
+import 'package:heros_journey/features/child_screen/models/child_model.dart';
+import 'package:heros_journey/features/child_screen/repository/find_child_by_id.dart';
+import 'package:heros_journey/features/child_screen/view/widgets/assign_quest_dialog.dart';
+import 'package:heros_journey/features/child_screen/view/widgets/child_error_text.dart';
+import 'package:heros_journey/features/child_screen/view/widgets/child_info_card.dart';
+import 'package:heros_journey/features/child_screen/view/widgets/child_quests_section.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
 
 

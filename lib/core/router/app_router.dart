@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/agreement/view/agreement_screen.dart';
-import 'package:heros_journey/features/auth_forgot/view/forgot_screen.dart';
+import 'package:heros_journey/features/auth_forgot/view/screens/forgot_screen.dart';
 import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_bloc.dart';
-import 'package:heros_journey/features/auth_login/view/login_screen.dart';
+import 'package:heros_journey/features/auth_login/view/screens/login_screen.dart';
 import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.dart';
-import 'package:heros_journey/features/auth_registration/view/registration_screen.dart';
+import 'package:heros_journey/features/auth_registration/view/screens/registration_screen.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
 import 'package:heros_journey/features/psychologist_screen/view/screens/psychologist_screen.dart';
 

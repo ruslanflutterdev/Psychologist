@@ -2,9 +2,7 @@ abstract class ForgotEvent {}
 
 class ForgotSubmitted extends ForgotEvent {
   final String email;
-  final String newPassword;
-
-  ForgotSubmitted({required this.email, required this.newPassword});
+  ForgotSubmitted({required this.email});
 }
 
 class ForgotBackPressed extends ForgotEvent {}
