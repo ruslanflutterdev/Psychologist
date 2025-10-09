@@ -10,7 +10,6 @@ import 'package:heros_journey/features/auth_registration/viewmodel/registration/
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_event.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_state.dart';
 
-
 class RegistrationForm extends StatefulWidget {
   final RegistrationState state;
 
@@ -24,6 +23,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _emailCtrl;
   late final TextEditingController _passCtrl;
+  late final TextEditingController _confirmCtrl;
   bool _consentChecked = false;
 
   @override
@@ -31,12 +31,14 @@ class _RegistrationFormState extends State<RegistrationForm> {
     super.initState();
     _emailCtrl = TextEditingController();
     _passCtrl = TextEditingController();
+    _confirmCtrl = TextEditingController();
   }
 
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _confirmCtrl.dispose();
     super.dispose();
   }
 
@@ -49,9 +51,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   bool get _canSubmit => _consentChecked && !widget.state.isLoading;
 
-  void _openAgreement() {
-    Navigator.of(context).pushNamed('/agreement');
-  }
+  void _openAgreement() => Navigator.of(context).pushNamed('/agreement');
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +70,22 @@ class _RegistrationFormState extends State<RegistrationForm> {
           const SizedBox(height: 12),
           RegistrationPasswordField(controller: _passCtrl),
           const SizedBox(height: 12),
+
+          TextFormField(
+            controller: _confirmCtrl,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: 'Подтверждение пароля',
+            ),
+            validator: (v) {
+              final val = v?.trim() ?? '';
+              if (val.isEmpty) return 'Повторите пароль';
+              if (val != _passCtrl.text.trim()) return 'Пароли не совпадают';
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 12),
           ConsentRow(
             checkbox: ConsentCheckbox(
               value: _consentChecked,
@@ -78,6 +94,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
             onOpenAgreement: _openAgreement,
           ),
           const SizedBox(height: 16),
+
           if (state.errorMessage != null)
             Text(
               state.errorMessage!,

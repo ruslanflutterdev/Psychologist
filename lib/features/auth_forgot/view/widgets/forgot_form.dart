@@ -4,10 +4,9 @@ import 'package:heros_journey/features/auth_forgot/model/forgot_state.dart';
 import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_bloc.dart';
 import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_event.dart';
 
-
-
 class ForgotForm extends StatefulWidget {
   final ForgotState state;
+
   const ForgotForm({super.key, required this.state});
 
   @override
@@ -17,29 +16,23 @@ class ForgotForm extends StatefulWidget {
 class _ForgotFormState extends State<ForgotForm> {
   late final GlobalKey<FormState> _formKey;
   late final TextEditingController _emailCtrl;
-  late final TextEditingController _passCtrl;
-
 
   @override
   void initState() {
     super.initState();
     _formKey = GlobalKey<FormState>();
     _emailCtrl = TextEditingController();
-    _passCtrl = TextEditingController();
   }
 
   @override
   void dispose() {
     _emailCtrl.dispose();
-    _passCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    context.read<ForgotBloc>().add(
-      ForgotSubmitted(email: _emailCtrl.text, newPassword: _passCtrl.text),
-    );
+    context.read<ForgotBloc>().add(ForgotSubmitted(email: _emailCtrl.text));
   }
 
   void _goBack() {
@@ -73,19 +66,7 @@ class _ForgotFormState extends State<ForgotForm> {
               return null;
             },
           ),
-          const SizedBox(height: 12),
 
-          TextFormField(
-            controller: _passCtrl,
-            obscureText: true,
-            decoration: const InputDecoration(labelText: 'Новый пароль'),
-            validator: (v) {
-              final val = v?.trim() ?? '';
-              if (val.isEmpty) return 'Введите пароль';
-              if (val.length < 6) return 'Минимум 6 символов';
-              return null;
-            },
-          ),
           const SizedBox(height: 16),
 
           if (state.errorMessage != null)
@@ -93,8 +74,9 @@ class _ForgotFormState extends State<ForgotForm> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 state.errorMessage!,
-                style: theme.textTheme.bodyMedium!
-                    .copyWith(color: theme.colorScheme.error),
+                style: theme.textTheme.bodyMedium!.copyWith(
+                  color: theme.colorScheme.error,
+                ),
               ),
             ),
 
@@ -102,10 +84,11 @@ class _ForgotFormState extends State<ForgotForm> {
             onPressed: state.isLoading ? null : _submit,
             child: state.isLoading
                 ? const SizedBox(
-              height: 20, width: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-                : const Text('Сохранить новый пароль'),
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Отправить ссылку для сброса'),
           ),
           const SizedBox(height: 8),
 

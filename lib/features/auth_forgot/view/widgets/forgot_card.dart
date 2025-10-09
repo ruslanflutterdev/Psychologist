@@ -19,7 +19,9 @@ class ForgotCard extends StatelessWidget {
           listener: (context, state) {
             if (state.isSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Пароль изменён')),
+                const SnackBar(
+                  content: Text('Письмо со ссылкой для сброса отправлено'),
+                ),
               );
               Navigator.of(context).pushReplacementNamed('/login');
             }
