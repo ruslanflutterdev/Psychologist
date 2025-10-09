@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
-import 'package:heros_journey/features/child_screen/view/models/child_progress_model.dart';
+import 'package:heros_journey/features/child_screen/models/child_progress_model.dart';
 import 'package:heros_journey/features/progress_screen/viewmodel/widgets/meta_card.dart';
 import 'package:heros_journey/features/progress_screen/viewmodel/widgets/radar_chart_card.dart';
 

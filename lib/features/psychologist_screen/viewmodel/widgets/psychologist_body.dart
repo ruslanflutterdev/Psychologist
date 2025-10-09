@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
-import 'package:heros_journey/features/child_screen/view/models/child_model.dart';
-import 'package:heros_journey/features/psychologist_screen/view/models/psychologist_model.dart';
-import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/children_list.dart';
+import 'package:heros_journey/features/child_screen/models/child_model.dart';
+import 'package:heros_journey/features/psychologist_screen/model/psychologist_model.dart';
+import 'package:heros_journey/features/psychologist_screen/view/widgets/children_list.dart';
+import 'package:heros_journey/features/psychologist_screen/view/widgets/psychologist_header_skeleton.dart';
 import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/psychologist_header.dart';
-import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/psychologist_header_skeleton.dart';
+
 
 class PsychologistBody extends StatelessWidget {
   final void Function(ChildModel child) onOpenChild;

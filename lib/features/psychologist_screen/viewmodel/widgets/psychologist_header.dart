@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:heros_journey/features/psychologist_screen/view/models/psychologist_model.dart';
+import 'package:heros_journey/features/psychologist_screen/model/psychologist_model.dart';
 
 class PsychologistHeader extends StatelessWidget {
   final PsychologistModel profile;

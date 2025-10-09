@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:heros_journey/features/child_screen/view/models/child_progress_model.dart';
+import 'package:heros_journey/features/child_screen/models/child_progress_model.dart';
 
 class MetaCard extends StatelessWidget {
   final ChildProgressModel data;
