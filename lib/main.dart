@@ -11,10 +11,10 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: 'https://gaelyvhlqvqgjyiqkrqf.supabase.co',
-    anonKey: '<prefer publishable key instead of anon key for mobile and desktop apps>',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhZWx5dmhscXZxZ2p5aXFrcnFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MzE0NjIsImV4cCI6MjA3NTAwNzQ2Mn0.MFgs_m0K7MWtRw_TaWufWqYK4Bu_cTDwArWEcFxrrNE',
   );
 
-  ServiceRegistry.initSupabaseAuth();
+  ServiceRegistry.initSupabase();
 
   runApp(const PsychWebApp());
 }

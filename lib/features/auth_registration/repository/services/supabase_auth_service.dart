@@ -1,10 +1,11 @@
+import 'package:heros_journey/core/errors/auth_exception.dart' as core;
 import 'package:heros_journey/core/models/user_session_model.dart';
 import 'package:heros_journey/features/auth_registration/repository/services/auth_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 class SupabaseAuthService implements AuthService {
-  final SupabaseClient _client;
-  SupabaseAuthService(this._client);
+  final sb.SupabaseClient _supabase;
+  SupabaseAuthService(this._supabase);
 
   @override
   Future<UserSessionModel> registerPsychologist({
@@ -12,27 +13,28 @@ class SupabaseAuthService implements AuthService {
     required String password,
   }) async {
     try {
-      final res = await _client.auth.signUp(
-        email: email.trim(),
-        password: password.trim(),
+      final res = await _supabase.auth.signUp(
+        email: email,
+        password: password,
       );
 
-      if (res.user == null) {
-        throw const AuthException('Не удалось создать пользователя.');
+      final session = res.session ?? _supabase.auth.currentSession;
+      if (session == null) {
+        throw core.AuthException(
+          'EMAIL_CONFIRM_REQUIRED',
+          'Мы отправили ссылку на подтверждение. Подтвердите email, затем войдите.',
+        );
       }
 
-      final session = res.session ?? _client.auth.currentSession;
-      final token = session?.accessToken ?? '';
-
       return UserSessionModel(
-        token: token,
+        token: session.accessToken,
         role: 'psych',
-        email: email.trim(),
+        email: res.user?.email ?? email,
       );
-    } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseError(e));
-    } catch (_) {
-      throw const AuthException('Неизвестная ошибка при регистрации.');
+    } on sb.AuthException catch (e) {
+      throw core.AuthException('SUPABASE', _pretty(e.message));
+    } catch (e) {
+      throw core.AuthException('UNKNOWN', 'Ошибка регистрации: ${e.toString()}');
     }
   }
 
@@ -42,24 +44,23 @@ class SupabaseAuthService implements AuthService {
     required String password,
   }) async {
     try {
-      final res = await _client.auth.signInWithPassword(
-        email: email.trim(),
-        password: password.trim(),
+      final res = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
       );
-
-      if (res.session == null) {
-        throw const AuthException('Не удалось войти. Проверьте данные.');
+      final session = res.session ?? _supabase.auth.currentSession;
+      if (session == null) {
+        throw core.AuthException('NO_SESSION', 'Не удалось создать сессию.');
       }
-
       return UserSessionModel(
-        token: res.session!.accessToken,
+        token: session.accessToken,
         role: 'psych',
-        email: email.trim(),
+        email: res.user?.email ?? email,
       );
-    } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseError(e));
-    } catch (_) {
-      throw const AuthException('Неизвестная ошибка при входе.');
+    } on sb.AuthException catch (e) {
+      throw core.AuthException('SUPABASE', _pretty(e.message));
+    } catch (e) {
+      throw core.AuthException('UNKNOWN', 'Ошибка входа: ${e.toString()}');
     }
   }
 
@@ -69,25 +70,27 @@ class SupabaseAuthService implements AuthService {
     required String newPassword,
   }) async {
     try {
-      await _client.auth.resetPasswordForEmail(
-        email.trim(),
-        redirectTo: 'https://example.com/auth/callback',
+      await _supabase.auth.resetPasswordForEmail(
+        email,
       );
-    } on AuthApiException catch (e) {
-      throw AuthException(_mapSupabaseError(e));
-    } catch (_) {
-      throw const AuthException('Не удалось отправить письмо для сброса.');
+    } on sb.AuthException catch (e) {
+      throw core.AuthException('SUPABASE', _pretty(e.message));
+    } catch (e) {
+      throw core.AuthException('UNKNOWN', 'Ошибка сброса: ${e.toString()}');
     }
   }
 
-  String _mapSupabaseError(AuthApiException e) {
-    final msg = (e.message).toLowerCase();
-    if (msg.contains('user already registered')) return 'Такой email уже зарегистрирован.';
-    if (msg.contains('invalid login') || msg.contains('invalid credentials')) {
-      return 'Неверный логин или пароль.';
+  String _pretty(String raw) {
+    final m = raw.toLowerCase();
+    if (m.contains('already registered') || m.contains('user already exists')) {
+      return 'Email уже зарегистрирован';
     }
-    if (msg.contains('email not confirmed')) return 'Email не подтвержден. Проверьте почту.';
-    if ((e.statusCode ?? 0) == 429) return 'Слишком много попыток. Попробуйте позже.';
-    return e.message;
+    if (m.contains('invalid login') || m.contains('invalid credentials')) {
+      return 'Неверный email или пароль';
+    }
+    if (m.contains('email not confirmed')) {
+      return 'Подтвердите email через письмо и попробуйте снова';
+    }
+    return raw;
   }
 }
