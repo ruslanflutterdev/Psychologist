@@ -76,7 +76,7 @@ class SupabaseAuthService implements AuthService {
   Future<void> requestPasswordReset({required String email}) async {
     try {
       final redirect = kIsWeb
-          ? Uri.parse('\${Uri.base.origin}/reset').toString()
+          ? Uri.parse('${Uri.base.origin}/reset').toString()
           : null;
 
       await _supabase.auth.resetPasswordForEmail(email, redirectTo: redirect);
@@ -90,16 +90,45 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
+  Future<void> _updatePasswordHandler(String newPassword) async {
+    await _supabase.auth.updateUser(sb.UserAttributes(password: newPassword));
+  }
+
+  Future<T?> _refresh<T>(Future<T> Function() handler) async {
+    try {
+      return await handler();
+    } on sb.AuthException catch (e) {
+      final m = e.message.toLowerCase();
+      if (m.contains('auth session missing') || m.contains('invalid jwt')) {
+        await _supabase.auth.refreshSession();
+        return await handler();
+      }
+      rethrow;
+    }
+  }
+
   @override
   Future<void> applyNewPassword({required String newPassword}) async {
     try {
-      await _supabase.auth.updateUser(sb.UserAttributes(password: newPassword));
-    } on sb.AuthException catch (e) {
-      throw core.AuthException('SUPABASE', _pretty(e.message));
-    } catch (e) {
+      await _refresh(() => _updatePasswordHandler(newPassword));
+    } on sb.AuthException catch (e, stackTrace) {
+      print(e);
+      print(stackTrace);
+      print('Supabase AuthException status code: ${e.statusCode}');
+
+      final message = _pretty(e.message);
+      if (message == 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.') {
+        throw core.AuthException('TOKEN_EXPIRED', message);
+      }
+      throw core.AuthException('SUPABASE', message);
+    } catch (e, stackTrace) {
+      print(e);
+      print(stackTrace);
+      if (e is core.AuthException) rethrow;
+
       throw core.AuthException(
         'UNKNOWN',
-        'Ошибка обновления пароля: ${e.toString()}',
+        'Неизвестная ошибка. Повторите попытку.',
       );
     }
   }
@@ -114,6 +143,9 @@ class SupabaseAuthService implements AuthService {
     }
     if (m.contains('email not confirmed')) {
       return 'Подтвердите email через письмо и попробуйте снова';
+    }
+    if (m.contains('auth session missing') || m.contains('invalid refresh token')) {
+      return 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.';
     }
     return raw;
   }
