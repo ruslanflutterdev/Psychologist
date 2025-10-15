@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/models/quest_models.dart';
+import 'package:heros_journey/core/testing/test_keys.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_quests_service.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/assigned_quest_tile.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/completed_quest_tile.dart';
@@ -46,19 +47,27 @@ class ChildQuestsSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Текущие задания', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Текущие задания',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             if (assigned.isEmpty)
-              const Text('Нет назначенных квестов'),
-            if (assigned.isNotEmpty)
-              ...assigned.map((e) => AssignedQuestTile(item: e)),
+              const Text('Нет назначенных квестов')
+            else
+              Column(
+                key: Tk.assignedList,
+                children: assigned
+                    .map((e) => AssignedQuestTile(item: e))
+                    .toList(),
+              ),
 
             const SizedBox(height: 16),
             Text('Выполненные', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             if (completed.isEmpty)
-              const Text('Пока нет выполненных заданий'),
-            if (completed.isNotEmpty)
+              const Text('Пока нет выполненных заданий')
+            else
               ...completed.map((e) => CompletedQuestTile(item: e)),
           ],
         );

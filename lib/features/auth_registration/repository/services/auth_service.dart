@@ -11,8 +11,7 @@ abstract class AuthService {
     required String password,
   });
 
-  Future<void> resetPassword({
-    required String email,
-    required String newPassword,
-  });
+  Future<void> requestPasswordReset({required String email});
+
+  Future<void> applyNewPassword({required String newPassword});
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heros_journey/core/testing/test_keys.dart';
 
 class ChildActions extends StatelessWidget {
   final bool isLoading;
@@ -18,6 +19,7 @@ class ChildActions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FilledButton(
+          key: Tk.addQuestBtn,
           onPressed: isLoading ? null : onAssignQuest,
           child: isLoading
               ? const SizedBox(

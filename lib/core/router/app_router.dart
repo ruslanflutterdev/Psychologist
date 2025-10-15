@@ -9,6 +9,8 @@ import 'package:heros_journey/features/auth_login/view/screens/login_screen.dart
 import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.dart';
 import 'package:heros_journey/features/auth_registration/view/screens/registration_screen.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
+import 'package:heros_journey/features/auth_reset/view/screens/reset_screen.dart';
+import 'package:heros_journey/features/auth_reset/viewmodel/reset_bloc.dart';
 import 'package:heros_journey/features/psychologist_screen/view/screens/psychologist_screen.dart';
 
 class AppRouter {
@@ -16,9 +18,8 @@ class AppRouter {
     switch (settings.name) {
       case '/login':
         return MaterialPageRoute(
-          settings: settings,
           builder: (ctx) => BlocProvider(
-            create: (_) => LoginBloc(
+            create: (ctx) => LoginBloc(
               auth: ServiceRegistry.auth,
               sessionCubit: ctx.read<SessionCubit>(),
             ),
@@ -53,6 +54,14 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const AgreementScreen(),
+        );
+      case '/reset':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (ctx) => BlocProvider(
+            create: (_) => ResetBloc(auth: ServiceRegistry.auth),
+            child: const ResetScreen(),
+          ),
         );
       default:
         return _redirect('/login');

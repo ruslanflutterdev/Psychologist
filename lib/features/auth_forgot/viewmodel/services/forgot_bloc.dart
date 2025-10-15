@@ -6,6 +6,7 @@ import 'package:heros_journey/features/auth_registration/repository/services/aut
 
 class ForgotBloc extends Bloc<ForgotEvent, ForgotState> {
   final AuthService auth;
+
   ForgotBloc({required this.auth}) : super(ForgotState.initial) {
     on<ForgotSubmitted>(_onSubmit);
     on<ForgotBackPressed>(_onBack);
@@ -14,7 +15,7 @@ class ForgotBloc extends Bloc<ForgotEvent, ForgotState> {
   Future<void> _onSubmit(ForgotSubmitted e, Emitter<ForgotState> emit) async {
     emit(state.copyWith(isLoading: true, isSuccess: false));
     try {
-      await auth.resetPassword(email: e.email, newPassword: '');
+      await auth.requestPasswordReset(email: e.email);
       emit(state.copyWith(isLoading: false, isSuccess: true));
     } on AuthException catch (err) {
       emit(state.copyWith(isLoading: false, errorMessage: err.message));
