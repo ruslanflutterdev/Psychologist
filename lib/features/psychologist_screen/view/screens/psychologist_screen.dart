@@ -24,6 +24,7 @@ class PsychologistScreen extends StatelessWidget {
     ).pushNamedAndRemoveUntil('/login', (route) => false);
   }
 
+
   void _openChild(BuildContext context, ChildModel child) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
