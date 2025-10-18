@@ -16,4 +16,5 @@ abstract class AuthService {
   Future<void> applyNewPassword({required String newPassword});
 
   Future<void> logout();
+  Future<void> clearAllLocalData();
 }

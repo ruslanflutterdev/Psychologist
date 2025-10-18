@@ -9,21 +9,22 @@ import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/psy
 class PsychologistScreen extends StatelessWidget {
   const PsychologistScreen({super.key});
 
-  void _logout(BuildContext context) async {
-    try {
-      await ServiceRegistry.auth.logout();
-    } catch (_) {}
+  Future<void> _logout(BuildContext context) async {
+    await ServiceRegistry.auth.logout();
 
-    if (!context.mounted) return;
-    context.read<SessionCubit>().clear();
+    await ServiceRegistry.auth.clearAllLocalData();
 
-    if (!context.mounted) return;
-    Navigator.of(
-      context,
-      rootNavigator: true,
-    ).pushNamedAndRemoveUntil('/login', (route) => false);
+    if (context.mounted) {
+      context.read<SessionCubit>().clear();
+    }
+
+    if (context.mounted) {
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
   }
-
 
   void _openChild(BuildContext context, ChildModel child) {
     Navigator.of(context).push(

@@ -117,7 +117,8 @@ class SupabaseAuthService implements AuthService {
       print('Supabase AuthException status code: ${e.statusCode}');
 
       final message = _pretty(e.message);
-      if (message == 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.') {
+      if (message ==
+          'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.') {
         throw core.AuthException('TOKEN_EXPIRED', message);
       }
       throw core.AuthException('SUPABASE', message);
@@ -138,27 +139,36 @@ class SupabaseAuthService implements AuthService {
     try {
       await _supabase.auth.signOut();
     } on sb.AuthException catch (e) {
-      // Игнорируем ошибку выхода, чтобы не блокировать очистку локального состояния.
-      if (kDebugMode) print('Supabase signOut failed: ${e.message}');
+      if (kDebugMode) {
+        debugPrint('Supabase signOut error: ${e.message}');
+      }
     } catch (e) {
-      if (kDebugMode) print('Supabase signOut failed: $e');
+      if (kDebugMode) {
+        debugPrint('Unexpected signOut error: $e');
+      }
     }
   }
 
-  String _pretty(String raw) {
-    final m = raw.toLowerCase();
-    if (m.contains('already registered') || m.contains('user already exists')) {
-      return 'Email уже зарегистрирован';
-    }
-    if (m.contains('invalid login') || m.contains('invalid credentials')) {
-      return 'Неверный email или пароль';
-    }
-    if (m.contains('email not confirmed')) {
-      return 'Подтвердите email через письмо и попробуйте снова';
-    }
-    if (m.contains('auth session missing') || m.contains('invalid refresh token')) {
-      return 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.';
-    }
-    return raw;
+  @override
+  Future<void> clearAllLocalData() async {
+    await Future<void>.value();
   }
+}
+
+String _pretty(String raw) {
+  final m = raw.toLowerCase();
+  if (m.contains('already registered') || m.contains('user already exists')) {
+    return 'Email уже зарегистрирован';
+  }
+  if (m.contains('invalid login') || m.contains('invalid credentials')) {
+    return 'Неверный email или пароль';
+  }
+  if (m.contains('email not confirmed')) {
+    return 'Подтвердите email через письмо и попробуйте снова';
+  }
+  if (m.contains('auth session missing') ||
+      m.contains('invalid refresh token')) {
+    return 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.';
+  }
+  return raw;
 }
