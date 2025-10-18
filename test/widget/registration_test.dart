@@ -36,6 +36,8 @@ void main() {
     mockAuth = MockAuthService();
     mockAgreement = MockAgreementService();
     mockSessionCubit = MockSessionCubit();
+    when(() => mockSessionCubit.stream).thenAnswer((_) => const Stream<UserSessionModel?>.empty());
+    when(() => mockSessionCubit.close()).thenAnswer((_) => Future.value());
     // Инициализируем ServiceRegistry с мок-сервисами
     ServiceRegistry.auth = mockAuth;
     ServiceRegistry.agreement = mockAgreement;
@@ -58,6 +60,7 @@ void main() {
             ),
           ],
           child: MaterialApp(
+            // ИСПРАВЛЕНО: Убран SingleChildScrollView
             home: const RegistrationScreen(),
             onGenerateRoute: (settings) {
               if (settings.name == '/psychologist_screen') {
@@ -77,23 +80,31 @@ void main() {
       // Находим чекбокс и нажимаем на него (используем более точный finder)
       final consentCheckbox = find.byType(ConsentCheckbox);
       await tester.tap(consentCheckbox);
-      await tester.pumpAndSettle();
+      await tester.pump();
+
+      const validEmail = 'test@example.com';
+      const validPassword = 'CorrectPassword1!';
 
       // Проверяем, что кнопка стала активной
       expect(tester.widget<RegistrationSubmitButton>(submitButton).enabled, isTrue);
 
+      // Заполняем поля
+      await tester.enterText(find.byType(TextFormField).at(0), validEmail); // Email
+      await tester.enterText(find.byType(TextFormField).at(1), validPassword); // Пароль
+      await tester.enterText(find.byType(TextFormField).at(2), validPassword); // Подтверждение
+      await tester.pump();
+
+      // Кнопка остается активной
+      expect(tester.widget<RegistrationSubmitButton>(submitButton).enabled, isTrue);
+
       // Нажимаем на кнопку и проверяем, что метод регистрации вызывается
       when(() => mockAuth.registerPsychologist(email: any(named: 'email'), password: any(named: 'password')))
-          .thenAnswer((_) async => const UserSessionModel(token: 'token', role: 'psych', email: 'test@test.com'));
+          .thenAnswer((_) async => const UserSessionModel(token: 'token', role: 'psych', email: validEmail));
 
-      await tester.enterText(find.byType(TextFormField).at(0), 'test@example.com');
-      await tester.enterText(find.byType(TextFormField).at(1), 'password123');
-      await tester.enterText(find.byType(TextFormField).at(2), 'password123');
-      await tester.pump();
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
-      verify(() => mockAuth.registerPsychologist(email: 'test@example.com', password: 'password123')).called(1);
+      verify(() => mockAuth.registerPsychologist(email: validEmail, password: validPassword)).called(1);
     },
   );
 

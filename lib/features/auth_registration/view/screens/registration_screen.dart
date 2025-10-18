@@ -10,7 +10,7 @@ class RegistrationScreen extends StatelessWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
-          child: const RegistrationCard(),
+          child: const SingleChildScrollView(child: RegistrationCard()),
         ),
       ),
     );
