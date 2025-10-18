@@ -7,8 +7,8 @@ import 'package:heros_journey/features/child_screen/view/widgets/assign_quest_di
 import 'package:heros_journey/features/child_screen/view/widgets/child_error_text.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_info_card.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_quests_section.dart';
+import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_card.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
-
 
 class ChildScreen extends StatefulWidget {
   final String childId;
@@ -73,9 +73,7 @@ class _ChildScreenState extends State<ChildScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Назначен квест: ${quest.title}')),
         );
-        setState(
-          () {},
-        );
+        setState(() {});
       }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
@@ -124,6 +122,10 @@ class _ChildScreenState extends State<ChildScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               ChildInfoCard(isLoading: _loadingChild, child: _child),
+              ParentContactCard(
+                childId: widget.childId,
+                service: ServiceRegistry.parentContact,
+              ),
               const SizedBox(height: 8),
               ChildErrorText(error: _error),
               const SizedBox(height: 8),
