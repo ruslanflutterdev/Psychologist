@@ -133,6 +133,18 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
+  @override
+  Future<void> logout() async {
+    try {
+      await _supabase.auth.signOut();
+    } on sb.AuthException catch (e) {
+      // Игнорируем ошибку выхода, чтобы не блокировать очистку локального состояния.
+      if (kDebugMode) print('Supabase signOut failed: ${e.message}');
+    } catch (e) {
+      if (kDebugMode) print('Supabase signOut failed: $e');
+    }
+  }
+
   String _pretty(String raw) {
     final m = raw.toLowerCase();
     if (m.contains('already registered') || m.contains('user already exists')) {
