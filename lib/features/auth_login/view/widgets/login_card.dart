@@ -4,7 +4,6 @@ import 'package:heros_journey/features/auth_login/view/widgets/login_form.dart';
 import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.dart';
 import 'package:heros_journey/features/auth_login/viewmodel/services/login_event.dart';
 
-
 class LoginCard extends StatelessWidget {
   const LoginCard({super.key});
 

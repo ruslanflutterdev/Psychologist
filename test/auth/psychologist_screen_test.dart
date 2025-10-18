@@ -17,9 +17,8 @@ import 'package:mocktail/mocktail.dart';
 
 // Мок-класс для AuthService, необходим для проверки вызова logout и clearAllLocalData
 class MockAuthService extends Mock implements AuthService {
-  Future<void> clearAllLocalData() => super.noSuchMethod(
-    Invocation.method(#clearAllLocalData, []),
-  );
+  Future<void> clearAllLocalData() =>
+      super.noSuchMethod(Invocation.method(#clearAllLocalData, []));
 }
 
 // Мок-класс для SessionCubit
@@ -53,18 +52,21 @@ void main() {
     mockChildService = MockChildService();
 
     // --- ИСПРАВЛЕНО: Добавлено мокирование stream и close() для совместимости с BlocProvider ---
-    when(() => mockSessionCubit.stream).thenAnswer((_) => Stream<UserSessionModel?>.empty());
+    when(
+      () => mockSessionCubit.stream,
+    ).thenAnswer((_) => Stream<UserSessionModel?>.empty());
     when(() => mockSessionCubit.close()).thenAnswer((_) => Future.value());
-
 
     // --- НАСТРОЙКА MOCK-СЕРВИСОВ ---
     // Для успешной загрузки PsychologistScreen и Body:
     when(() => mockPsychologistService.getProfile()).thenAnswer(
-          (_) => Future.value(const PsychologistModel(firstName: 'Test', lastName: 'User')),
+      (_) => Future.value(
+        const PsychologistModel(firstName: 'Test', lastName: 'User'),
+      ),
     );
-    when(() => mockChildService.getChildren()).thenAnswer(
-          (_) => Future.value(<ChildModel>[]),
-    );
+    when(
+      () => mockChildService.getChildren(),
+    ).thenAnswer((_) => Future.value(<ChildModel>[]));
 
     // Переопределение ServiceRegistry для использования моков
     ServiceRegistry.auth = mockAuthService;
@@ -75,21 +77,25 @@ void main() {
     // Сессия считается активной перед тестом
     when(() => mockSessionCubit.isAuthorized).thenReturn(true);
     when(() => mockSessionCubit.state).thenReturn(
-      const UserSessionModel(token: 'active', role: 'psych', email: 'test@psych.com'),
+      const UserSessionModel(
+        token: 'active',
+        role: 'psych',
+        email: 'test@psych.com',
+      ),
     );
     when(() => mockSessionCubit.clear()).thenAnswer((_) {});
 
     // Мокирование методов AuthService (logout и clearAllLocalData)
     when(() => mockAuthService.logout()).thenAnswer((_) => Future.value());
-    when(() => mockAuthService.clearAllLocalData()).thenAnswer((_) => Future.value());
+    when(
+      () => mockAuthService.clearAllLocalData(),
+    ).thenAnswer((_) => Future.value());
   });
 
   // Вспомогательный метод для создания тестируемого виджета
   Widget createWidgetUnderTest() {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider<SessionCubit>(create: (_) => mockSessionCubit),
-      ],
+      providers: [BlocProvider<SessionCubit>(create: (_) => mockSessionCubit)],
       child: MaterialApp(
         navigatorKey: GlobalKey<NavigatorState>(),
         onGenerateRoute: AppRouter.onGenerateRoute,
@@ -103,56 +109,64 @@ void main() {
   }
 
   group('PsychologistScreen Logout Flow', () {
-    testWidgets('Tapping "Выйти" button performs full logout sequence and redirects', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle(); // Ждем завершения загрузки PsychologistBody
+    testWidgets(
+      'Tapping "Выйти" button performs full logout sequence and redirects',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+        await tester
+            .pumpAndSettle(); // Ждем завершения загрузки PsychologistBody
 
-      // 1. Проверяем, что экран загружен и кнопка "Выйти" присутствует
-      expect(find.byType(PsychologistScreen), findsOneWidget);
-      final logoutButton = find.text('Выйти');
-      expect(logoutButton, findsOneWidget);
+        // 1. Проверяем, что экран загружен и кнопка "Выйти" присутствует
+        expect(find.byType(PsychologistScreen), findsOneWidget);
+        final logoutButton = find.text('Выйти');
+        expect(logoutButton, findsOneWidget);
 
-      // 2. Нажимаем кнопку
-      await tester.tap(logoutButton);
-      await tester.pumpAndSettle(); // Ждем завершения асинхронной операции и навигации
+        // 2. Нажимаем кнопку
+        await tester.tap(logoutButton);
+        await tester
+            .pumpAndSettle(); // Ждем завершения асинхронной операции и навигации
 
-      // 3. Проверки последовательности выхода (согласно критериям):
+        // 3. Проверки последовательности выхода (согласно критериям):
 
-      // Проверка 3.1: Был вызван Supabase logout
-      verify(() => mockAuthService.logout()).called(1);
+        // Проверка 3.1: Был вызван Supabase logout
+        verify(() => mockAuthService.logout()).called(1);
 
-      // Проверка 3.2: Была вызвана глубокая очистка данных (localStorage, IndexedDB и т.д.)
-      verify(() => mockAuthService.clearAllLocalData()).called(1);
+        // Проверка 3.2: Была вызвана глубокая очистка данных (localStorage, IndexedDB и т.д.)
+        verify(() => mockAuthService.clearAllLocalData()).called(1);
 
-      // Проверка 3.3: Был вызван сброс локального стейта (SessionCubit)
-      verify(() => mockSessionCubit.clear()).called(1);
+        // Проверка 3.3: Был вызван сброс локального стейта (SessionCubit)
+        verify(() => mockSessionCubit.clear()).called(1);
 
-      // Проверка 3.4: Произошел редирект на экран логина
-      expect(find.text('Login Screen'), findsOneWidget);
-      expect(find.byType(PsychologistScreen), findsNothing);
-    });
+        // Проверка 3.4: Произошел редирект на экран логина
+        expect(find.text('Login Screen'), findsOneWidget);
+        expect(find.byType(PsychologistScreen), findsNothing);
+      },
+    );
 
-    testWidgets('PopScope invokation performs full logout sequence and redirects', (tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'PopScope invokation performs full logout sequence and redirects',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+        await tester.pumpAndSettle();
 
-      // 1. Имитируем попытку возврата (PopScope перехватывает "назад")
-      tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
+        // 1. Имитируем попытку возврата (PopScope перехватывает "назад")
+        tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
 
-      // 2. Проверки последовательности выхода:
+        // 2. Проверки последовательности выхода:
 
-      // Проверка 2.1: Был вызван Supabase logout
-      verify(() => mockAuthService.logout()).called(1);
+        // Проверка 2.1: Был вызван Supabase logout
+        verify(() => mockAuthService.logout()).called(1);
 
-      // Проверка 2.2: Была вызвана глубокая очистка данных
-      verify(() => mockAuthService.clearAllLocalData()).called(1);
+        // Проверка 2.2: Была вызвана глубокая очистка данных
+        verify(() => mockAuthService.clearAllLocalData()).called(1);
 
-      // Проверка 2.3: Был вызван сброс локального стейта (SessionCubit)
-      verify(() => mockSessionCubit.clear()).called(1);
+        // Проверка 2.3: Был вызван сброс локального стейта (SessionCubit)
+        verify(() => mockSessionCubit.clear()).called(1);
 
-      // Проверка 2.4: Произошел редирект на экран логина
-      expect(find.text('Login Screen'), findsOneWidget);
-    });
+        // Проверка 2.4: Произошел редирект на экран логина
+        expect(find.text('Login Screen'), findsOneWidget);
+      },
+    );
   });
 }

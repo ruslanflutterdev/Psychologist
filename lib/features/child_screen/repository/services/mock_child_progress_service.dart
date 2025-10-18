@@ -2,8 +2,6 @@ import 'dart:async';
 import 'package:heros_journey/features/child_screen/models/child_progress_model.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_progress_service.dart';
 
-
-
 class MockProgressService implements ProgressService {
   Duration latency = const Duration(milliseconds: 450);
   bool failNetwork = false;

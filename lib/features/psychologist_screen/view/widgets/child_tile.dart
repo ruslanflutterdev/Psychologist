@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/features/child_screen/models/child_model.dart';
 
-
 class ChildTile extends StatelessWidget {
   final ChildModel child;
   final VoidCallback onTap;

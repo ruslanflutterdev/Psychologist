@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/features/auth_login/view/widgets/login_card.dart';
 
-
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 

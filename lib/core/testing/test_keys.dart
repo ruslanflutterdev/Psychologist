@@ -1,11 +1,9 @@
 import 'package:flutter/widgets.dart';
 
 class Tk {
-
   static const addQuestBtn = Key('child.addQuestButton');
   static const assignedList = Key('child.assignedList');
   static const questPicker = Key('quest.picker');
-
 
   static Key filterChip(String t) => Key('quest.filter.$t');
   static Key questTile(String id) => Key('quest.tile.$id');

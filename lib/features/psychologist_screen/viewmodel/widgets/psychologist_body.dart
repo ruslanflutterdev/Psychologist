@@ -6,7 +6,6 @@ import 'package:heros_journey/features/psychologist_screen/view/widgets/children
 import 'package:heros_journey/features/psychologist_screen/view/widgets/psychologist_header_skeleton.dart';
 import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/psychologist_header.dart';
 
-
 class PsychologistBody extends StatelessWidget {
   final void Function(ChildModel child) onOpenChild;
 

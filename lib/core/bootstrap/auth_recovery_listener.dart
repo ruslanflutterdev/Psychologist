@@ -5,7 +5,6 @@ import 'package:heros_journey/features/auth_reset/view/screens/reset_screen.dart
 import 'package:heros_journey/features/auth_reset/viewmodel/reset_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 bool _recoveryHandled = false;
 
 void setupAuthRecoveryListener(GlobalKey<NavigatorState> navigatorKey) {
@@ -15,7 +14,9 @@ void setupAuthRecoveryListener(GlobalKey<NavigatorState> navigatorKey) {
     final hasRecoveryFragment = Uri.base.fragment.contains('type=recovery');
     final hasPkceCode = Uri.base.queryParameters.containsKey('code');
     final isRecoveryFlow =
-        hasRecoveryFragment || hasPkceCode || event == AuthChangeEvent.passwordRecovery;
+        hasRecoveryFragment ||
+        hasPkceCode ||
+        event == AuthChangeEvent.passwordRecovery;
 
     if (!isRecoveryFlow || _recoveryHandled) return;
     _recoveryHandled = true;
@@ -33,7 +34,7 @@ void setupAuthRecoveryListener(GlobalKey<NavigatorState> navigatorKey) {
             child: const ResetScreen(),
           ),
         ),
-            (route) => false,
+        (route) => false,
       );
     });
   });

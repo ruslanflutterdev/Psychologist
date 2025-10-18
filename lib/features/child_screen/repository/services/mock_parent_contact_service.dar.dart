@@ -12,7 +12,7 @@ class MockParentContactService implements ParentContactService {
     if (childId == '2') {
       _contacts.putIfAbsent(
         '2',
-            () => const ParentContactModel(
+        () => const ParentContactModel(
           fullName: 'Садыкова Анна Игоревна',
           phone: '+7 705 123 4567',
         ),
