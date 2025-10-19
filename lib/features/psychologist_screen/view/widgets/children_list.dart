@@ -14,6 +14,18 @@ class ChildrenList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (children.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'Детей пока нет',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       itemCount: children.length,
       itemBuilder: (context, i) =>
