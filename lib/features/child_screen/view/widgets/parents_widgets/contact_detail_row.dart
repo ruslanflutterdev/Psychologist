@@ -4,11 +4,7 @@ class ContactDetailRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const ContactDetailRow({
-    super.key,
-    required this.label,
-    required this.value,
-  });
+  const ContactDetailRow({super.key, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {

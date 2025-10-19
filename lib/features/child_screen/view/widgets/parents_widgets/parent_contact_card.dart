@@ -7,7 +7,6 @@ import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets
 import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_form_dialog.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_loading.dart';
 
-
 class ParentContactCard extends StatefulWidget {
   final String childId;
   final ParentContactService service;
@@ -89,7 +88,9 @@ class _ParentContactCardState extends State<ParentContactCard> {
         }
         final contact = snapshot.data;
         if (contact == null) {
-          return ParentContactAddButton(onPressed: () => _addOrEditContact(null));
+          return ParentContactAddButton(
+            onPressed: () => _addOrEditContact(null),
+          );
         }
         return ParentContactDetailsCard(
           contact: contact,

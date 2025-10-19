@@ -1,14 +1,18 @@
-
 enum QuestType { physical, emotional, cognitive, social, spiritual }
 
 extension QuestTypeX on QuestType {
   String get uiLabel {
     switch (this) {
-      case QuestType.physical:   return 'Сила (Physical)';
-      case QuestType.emotional:  return 'Эмоции (Emotional)';
-      case QuestType.cognitive:  return 'Интеллект (Cognitive)';
-      case QuestType.social:     return 'Соц. навыки (Social)';
-      case QuestType.spiritual:  return 'Смысл/ценности (Spiritual)';
+      case QuestType.physical:
+        return 'Сила (Physical)';
+      case QuestType.emotional:
+        return 'Эмоции (Emotional)';
+      case QuestType.cognitive:
+        return 'Интеллект (Cognitive)';
+      case QuestType.social:
+        return 'Соц. навыки (Social)';
+      case QuestType.spiritual:
+        return 'Смысл/ценности (Spiritual)';
     }
   }
 }
@@ -23,7 +27,7 @@ class Quest {
 enum ChildQuestStatus { assigned, completed }
 
 class ChildQuest {
-  final String id;             // уникальный id назначения
+  final String id; // уникальный id назначения
   final String childId;
   final Quest quest;
   final ChildQuestStatus status;

@@ -36,7 +36,9 @@ void main() {
     mockAuth = MockAuthService();
     mockAgreement = MockAgreementService();
     mockSessionCubit = MockSessionCubit();
-    when(() => mockSessionCubit.stream).thenAnswer((_) => const Stream<UserSessionModel?>.empty());
+    when(
+      () => mockSessionCubit.stream,
+    ).thenAnswer((_) => const Stream<UserSessionModel?>.empty());
     when(() => mockSessionCubit.close()).thenAnswer((_) => Future.value());
     // Инициализируем ServiceRegistry с мок-сервисами
     ServiceRegistry.auth = mockAuth;
@@ -45,7 +47,7 @@ void main() {
 
   testWidgets(
     'Кнопка "Зарегистрироваться" неактивна, пока не отмечено согласие, и активна после отметки',
-        (tester) async {
+    (tester) async {
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
@@ -55,16 +57,16 @@ void main() {
                 sessionCubit: mockSessionCubit,
               ),
             ),
-            BlocProvider<SessionCubit>(
-              create: (context) => mockSessionCubit,
-            ),
+            BlocProvider<SessionCubit>(create: (context) => mockSessionCubit),
           ],
           child: MaterialApp(
             // ИСПРАВЛЕНО: Убран SingleChildScrollView
             home: const RegistrationScreen(),
             onGenerateRoute: (settings) {
               if (settings.name == '/psychologist_screen') {
-                return MaterialPageRoute(builder: (_) => const Text('Psychologist Screen'));
+                return MaterialPageRoute(
+                  builder: (_) => const Text('Psychologist Screen'),
+                );
               }
               return null;
             },
@@ -75,7 +77,10 @@ void main() {
       // Находим кнопку и проверяем, что она неактивна
       final submitButton = find.byType(RegistrationSubmitButton);
       expect(submitButton, findsOneWidget);
-      expect(tester.widget<RegistrationSubmitButton>(submitButton).enabled, isFalse);
+      expect(
+        tester.widget<RegistrationSubmitButton>(submitButton).enabled,
+        isFalse,
+      );
 
       // Находим чекбокс и нажимаем на него (используем более точный finder)
       final consentCheckbox = find.byType(ConsentCheckbox);
@@ -86,70 +91,97 @@ void main() {
       const validPassword = 'CorrectPassword1!';
 
       // Проверяем, что кнопка стала активной
-      expect(tester.widget<RegistrationSubmitButton>(submitButton).enabled, isTrue);
+      expect(
+        tester.widget<RegistrationSubmitButton>(submitButton).enabled,
+        isTrue,
+      );
 
       // Заполняем поля
-      await tester.enterText(find.byType(TextFormField).at(0), validEmail); // Email
-      await tester.enterText(find.byType(TextFormField).at(1), validPassword); // Пароль
-      await tester.enterText(find.byType(TextFormField).at(2), validPassword); // Подтверждение
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        validEmail,
+      ); // Email
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        validPassword,
+      ); // Пароль
+      await tester.enterText(
+        find.byType(TextFormField).at(2),
+        validPassword,
+      ); // Подтверждение
       await tester.pump();
 
       // Кнопка остается активной
-      expect(tester.widget<RegistrationSubmitButton>(submitButton).enabled, isTrue);
+      expect(
+        tester.widget<RegistrationSubmitButton>(submitButton).enabled,
+        isTrue,
+      );
 
       // Нажимаем на кнопку и проверяем, что метод регистрации вызывается
-      when(() => mockAuth.registerPsychologist(email: any(named: 'email'), password: any(named: 'password')))
-          .thenAnswer((_) async => const UserSessionModel(token: 'token', role: 'psych', email: validEmail));
+      when(
+        () => mockAuth.registerPsychologist(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer(
+        (_) async => const UserSessionModel(
+          token: 'token',
+          role: 'psych',
+          email: validEmail,
+        ),
+      );
 
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
-      verify(() => mockAuth.registerPsychologist(email: validEmail, password: validPassword)).called(1);
-    },
-  );
-
-  testWidgets(
-    'При нажатии на ссылку открывается пользовательское соглашение',
-        (tester) async {
-      when(() => mockAgreement.getUserAgreementText()).thenAnswer((_) async => 'Test Agreement Text');
-
-      await tester.pumpWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<RegistrationBloc>(
-              create: (context) => RegistrationBloc(
-                auth: mockAuth,
-                sessionCubit: mockSessionCubit,
-              ),
-            ),
-            BlocProvider<SessionCubit>(
-              create: (context) => mockSessionCubit,
-            ),
-          ],
-          child: MaterialApp(
-            home: const RegistrationScreen(),
-            onGenerateRoute: (settings) {
-              if (settings.name == '/agreement') {
-                return MaterialPageRoute(
-                  builder: (_) => const AgreementScreen(),
-                );
-              }
-              return null;
-            },
-          ),
+      verify(
+        () => mockAuth.registerPsychologist(
+          email: validEmail,
+          password: validPassword,
         ),
-      );
-
-      // Находим ссылку и нажимаем на неё
-      final agreementLink = find.text('пользовательским соглашением');
-      expect(agreementLink, findsOneWidget);
-      await tester.tap(agreementLink);
-      await tester.pumpAndSettle();
-
-      // Проверяем, что открылся экран с соглашением и отображается текст
-      expect(find.byType(AgreementScreen), findsOneWidget);
-      expect(find.text('Пользовательское соглашение'), findsOneWidget);
-      expect(find.text('Test Agreement Text'), findsOneWidget);
+      ).called(1);
     },
   );
+
+  testWidgets('При нажатии на ссылку открывается пользовательское соглашение', (
+    tester,
+  ) async {
+    when(
+      () => mockAgreement.getUserAgreementText(),
+    ).thenAnswer((_) async => 'Test Agreement Text');
+
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<RegistrationBloc>(
+            create: (context) => RegistrationBloc(
+              auth: mockAuth,
+              sessionCubit: mockSessionCubit,
+            ),
+          ),
+          BlocProvider<SessionCubit>(create: (context) => mockSessionCubit),
+        ],
+        child: MaterialApp(
+          home: const RegistrationScreen(),
+          onGenerateRoute: (settings) {
+            if (settings.name == '/agreement') {
+              return MaterialPageRoute(builder: (_) => const AgreementScreen());
+            }
+            return null;
+          },
+        ),
+      ),
+    );
+
+    // Находим ссылку и нажимаем на неё
+    final agreementLink = find.text('пользовательским соглашением');
+    expect(agreementLink, findsOneWidget);
+    await tester.tap(agreementLink);
+    await tester.pumpAndSettle();
+
+    // Проверяем, что открылся экран с соглашением и отображается текст
+    expect(find.byType(AgreementScreen), findsOneWidget);
+    expect(find.text('Пользовательское соглашение'), findsOneWidget);
+    expect(find.text('Test Agreement Text'), findsOneWidget);
+  });
 }

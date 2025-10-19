@@ -4,9 +4,7 @@ import 'package:heros_journey/features/auth_registration/repository/services/sup
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 class MockGoTrueClient extends Mock implements GoTrueClient {}
-
 
 class MockSupabaseClient extends Mock implements SupabaseClient {
   @override
@@ -28,21 +26,27 @@ void main() {
   });
 
   group('AuthService Logout and Cleanup', () {
-    test('logout() calls GoTrueClient.signOut() and completes gracefully', () async {
-      // Подготовка: Убеждаемся, что signOut() не бросает исключение
-      when(() => mockAuth.signOut()).thenAnswer((_) async {});
+    test(
+      'logout() calls GoTrueClient.signOut() and completes gracefully',
+      () async {
+        // Подготовка: Убеждаемся, что signOut() не бросает исключение
+        when(() => mockAuth.signOut()).thenAnswer((_) async {});
 
-      // Выполнение
-      await authService.logout();
+        // Выполнение
+        await authService.logout();
 
-      // Проверка: Был ли вызван механизм выхода Supabase
-      verify(() => mockAuth.signOut()).called(1);
-    });
+        // Проверка: Был ли вызван механизм выхода Supabase
+        verify(() => mockAuth.signOut()).called(1);
+      },
+    );
 
-    test('clearAllLocalData() completes successfully (mock implementation is Future<void>.value())', () async {
-      // Проверка: Ожидаем, что функция не бросит исключение
-      expect(authService.clearAllLocalData(), completes);
-    });
+    test(
+      'clearAllLocalData() completes successfully (mock implementation is Future<void>.value())',
+      () async {
+        // Проверка: Ожидаем, что функция не бросит исключение
+        expect(authService.clearAllLocalData(), completes);
+      },
+    );
 
     test('logout() handles signOut errors gracefully', () async {
       // Подготовка: Имитация ошибки сети при выходе

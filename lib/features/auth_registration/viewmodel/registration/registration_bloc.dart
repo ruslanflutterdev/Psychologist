@@ -6,7 +6,6 @@ import 'package:heros_journey/features/auth_registration/repository/services/aut
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_event.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_state.dart';
 
-
 class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final AuthService auth;
   final SessionCubit sessionCubit;

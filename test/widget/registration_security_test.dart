@@ -13,14 +13,15 @@ import 'package:mocktail/mocktail.dart';
 
 // --- Mocks ---
 class MockAuthService extends Mock implements AuthService {}
+
 class MockSessionCubit extends Mock implements SessionCubit {}
 
 // Fakes
 class UserSessionModelFake extends Fake implements UserSessionModel {}
 
-
 // Utility function to find the password fields
-Finder findPasswordField(String labelText) => find.widgetWithText(TextFormField, labelText);
+Finder findPasswordField(String labelText) =>
+    find.widgetWithText(TextFormField, labelText);
 
 void main() {
   late MockAuthService mockAuth;
@@ -34,12 +35,18 @@ void main() {
     mockAuth = MockAuthService();
     mockSessionCubit = MockSessionCubit();
     // Настройка заглушек для BlocProvider
-    when(() => mockSessionCubit.stream).thenAnswer((_) => const Stream<UserSessionModel?>.empty());
+    when(
+      () => mockSessionCubit.stream,
+    ).thenAnswer((_) => const Stream<UserSessionModel?>.empty());
     when(() => mockSessionCubit.close()).thenAnswer((_) => Future.value());
-    when(() => mockAuth.registerPsychologist(
-      email: any(named: 'email'),
-      password: any(named: 'password'),
-    )).thenAnswer((_) async => const UserSessionModel(token: 't', role: 'p', email: 'e'));
+    when(
+      () => mockAuth.registerPsychologist(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer(
+      (_) async => const UserSessionModel(token: 't', role: 'p', email: 'e'),
+    );
 
     // Для виджет-теста устанавливаем mockAuth в ServiceRegistry
     ServiceRegistry.auth = mockAuth;
@@ -49,27 +56,27 @@ void main() {
     return MultiBlocProvider(
       providers: [
         BlocProvider<RegistrationBloc>(
-          create: (context) => RegistrationBloc(
-            auth: mockAuth,
-            sessionCubit: mockSessionCubit,
-          ),
+          create: (context) =>
+              RegistrationBloc(auth: mockAuth, sessionCubit: mockSessionCubit),
         ),
-        BlocProvider<SessionCubit>(
-          create: (context) => mockSessionCubit,
-        ),
+        BlocProvider<SessionCubit>(create: (context) => mockSessionCubit),
       ],
       child: MaterialApp(
         home: const RegistrationScreen(),
         routes: {
-          '/agreement': (context) => const Scaffold(body: Text('Agreement Screen')),
-          '/psychologist_screen': (context) => const Scaffold(body: Text('Psych Screen')),
+          '/agreement': (context) =>
+              const Scaffold(body: Text('Agreement Screen')),
+          '/psychologist_screen': (context) =>
+              const Scaffold(body: Text('Psych Screen')),
         },
       ),
     );
   }
 
   group('Registration Password Security Tests', () {
-    testWidgets('Validation errors are shown for weak passwords in both fields', (tester) async {
+    testWidgets('Validation errors are shown for weak passwords in both fields', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       final passwordField = findPasswordField('Пароль');
@@ -82,7 +89,10 @@ void main() {
       await tester.pump();
 
       // Кнопка активна, так как проверяется только _canSubmit (согласие + не loading)
-      expect(tester.widget<RegistrationSubmitButton>(submitButton).enabled, isTrue);
+      expect(
+        tester.widget<RegistrationSubmitButton>(submitButton).enabled,
+        isTrue,
+      );
 
       // 2. Вводим слабый пароль (Short: 7 символов)
       await tester.enterText(passwordField, '1234567');
@@ -93,7 +103,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Проверяем, что отображаются ошибки (Минимум 8 символов)
-      expect(find.text('Минимум 8 символов'), findsNWidgets(2), reason: 'Ошибка длины должна быть для обоих полей');
+      expect(
+        find.text('Минимум 8 символов'),
+        findsNWidgets(2),
+        reason: 'Ошибка длины должна быть для обоих полей',
+      );
 
       // 3. Вводим пароль, который НЕ содержит заглавную букву (длина > 8)
       await tester.enterText(passwordField, 'weakpass123!');
@@ -104,7 +118,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Проверяем ошибку для обоих полей
-      expect(find.text('Добавьте заглавную букву'), findsNWidgets(2), reason: 'Ошибка заглавной буквы должна быть для обоих полей');
+      expect(
+        find.text('Добавьте заглавную букву'),
+        findsNWidgets(2),
+        reason: 'Ошибка заглавной буквы должна быть для обоих полей',
+      );
 
       // 4. Вводим сильный, но несовпадающий пароль
       await tester.enterText(passwordField, 'Correct1!');
@@ -114,7 +132,11 @@ void main() {
 
       // Проверяем, что ошибки безопасности исчезли, но осталась ошибка несовпадения
       expect(find.text('Добавьте заглавную букву'), findsNothing);
-      expect(find.text('Пароли не совпадают'), findsOneWidget, reason: 'Ошибка несовпадения должна быть показана');
+      expect(
+        find.text('Пароли не совпадают'),
+        findsOneWidget,
+        reason: 'Ошибка несовпадения должна быть показана',
+      );
 
       // 5. Вводим полностью валидный и совпадающий пароль
       await tester.enterText(confirmField, 'Correct1!');
@@ -123,17 +145,26 @@ void main() {
 
       // Проверяем, что ошибок нет, и кнопка активна
       expect(find.text('Пароли не совпадают'), findsNothing);
-      expect(tester.widget<RegistrationSubmitButton>(submitButton).enabled, isTrue, reason: 'Кнопка должна быть активна');
+      expect(
+        tester.widget<RegistrationSubmitButton>(submitButton).enabled,
+        isTrue,
+        reason: 'Кнопка должна быть активна',
+      );
 
       // 6. Проверяем, что при попытке регистрации с корректным паролем вызывается auth.register
-      await tester.enterText(find.byType(TextFormField).at(0), 'test@example.com'); // Вводим Email
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'test@example.com',
+      ); // Вводим Email
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
-      verify(() => mockAuth.registerPsychologist(
-        email: 'test@example.com',
-        password: 'Correct1!',
-      )).called(1);
+      verify(
+        () => mockAuth.registerPsychologist(
+          email: 'test@example.com',
+          password: 'Correct1!',
+        ),
+      ).called(1);
     });
   });
 }

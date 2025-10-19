@@ -6,6 +6,7 @@ import '../fixtures/quest_fixtures.dart';
 import '../mocks/mock_repos.dart';
 
 class QuestFake extends Fake implements Quest {}
+
 class ChildQuestFake extends Fake implements ChildQuest {}
 
 void main() {
@@ -16,76 +17,60 @@ void main() {
     registerFallbackValue(ChildQuestFake());
   });
 
-  testWidgets(
-    'Поток: открыть список → фильтр → назначить → квест в текущих',
-        (tester) async {
-      final repo = MockQuestsRepository();
+  testWidgets('Поток: открыть список → фильтр → назначить → квест в текущих', (
+    tester,
+  ) async {
+    final repo = MockQuestsRepository();
 
-      when(() => repo.assignQuest(childId, any<Quest>()))
-          .thenAnswer((invocation) async {
-        final Quest q = invocation.positionalArguments[1] as Quest;
-        return ChildQuest(
-          id: 'assigned-${q.id}',
-          questId: q.id,
-          title: q.title,
-        );
-      });
+    when(() => repo.assignQuest(childId, any<Quest>())).thenAnswer((
+      invocation,
+    ) async {
+      final Quest q = invocation.positionalArguments[1] as Quest;
+      return ChildQuest(id: 'assigned-${q.id}', questId: q.id, title: q.title);
+    });
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ChildProfileHarness(repo: repo),
-        ),
-      );
+    await tester.pumpWidget(MaterialApp(home: ChildProfileHarness(repo: repo)));
 
+    expect(find.byKey(Tk.questPicker), findsNothing);
+    await tester.tap(find.byKey(Tk.addQuestBtn));
+    await tester.pumpAndSettle();
+    expect(find.byKey(Tk.questPicker), findsOneWidget);
 
-      expect(find.byKey(Tk.questPicker), findsNothing);
-      await tester.tap(find.byKey(Tk.addQuestBtn));
-      await tester.pumpAndSettle();
-      expect(find.byKey(Tk.questPicker), findsOneWidget);
+    final listTilesInPickerBefore = find.descendant(
+      of: find.byKey(Tk.questPicker),
+      matching: find.byType(ListTile),
+    );
+    expect(listTilesInPickerBefore, findsNWidgets(availableQuests.length));
 
+    await tester.tap(find.byKey(Tk.filterChip('strength')));
+    await tester.pumpAndSettle();
 
-      final listTilesInPickerBefore = find.descendant(
-        of: find.byKey(Tk.questPicker),
-        matching: find.byType(ListTile),
-      );
-      expect(listTilesInPickerBefore, findsNWidgets(availableQuests.length));
+    final listTilesInPickerAfter = find.descendant(
+      of: find.byKey(Tk.questPicker),
+      matching: find.byType(ListTile),
+    );
+    expect(
+      listTilesInPickerAfter,
+      findsNWidgets(availableQuests.where((q) => q.type == 'strength').length),
+    );
 
-      await tester.tap(find.byKey(Tk.filterChip('strength')));
-      await tester.pumpAndSettle();
+    final strengthQuest = availableQuests.firstWhere(
+      (q) => q.type == 'strength',
+    );
+    await tester.tap(find.byKey(Tk.assignBtn(strengthQuest.id)));
+    await tester.pumpAndSettle();
 
-      final listTilesInPickerAfter = find.descendant(
-        of: find.byKey(Tk.questPicker),
-        matching: find.byType(ListTile),
-      );
-      expect(
-        listTilesInPickerAfter,
-        findsNWidgets(
-          availableQuests.where((q) => q.type == 'strength').length,
-        ),
-      );
+    expect(find.byKey(Tk.assignedList), findsOneWidget);
+    expect(find.text(strengthQuest.title), findsWidgets);
 
-
-      final strengthQuest =
-      availableQuests.firstWhere((q) => q.type == 'strength');
-      await tester.tap(find.byKey(Tk.assignBtn(strengthQuest.id)));
-      await tester.pumpAndSettle();
-
-
-      expect(find.byKey(Tk.assignedList), findsOneWidget);
-      expect(find.text(strengthQuest.title), findsWidgets);
-
-
-      final comp = initiallyAssigned.first;
-      expect(find.byKey(Tk.completedItem(comp.id)), findsOneWidget);
-      expect(find.byKey(Tk.completedTitle(comp.id)), findsOneWidget);
-      expect(find.byKey(Tk.completedComment(comp.id)), findsOneWidget);
-      expect(find.byKey(Tk.completedPhoto(comp.id)), findsOneWidget);
-      expect(find.byKey(Tk.completedDate(comp.id)), findsOneWidget);
-    },
-  );
+    final comp = initiallyAssigned.first;
+    expect(find.byKey(Tk.completedItem(comp.id)), findsOneWidget);
+    expect(find.byKey(Tk.completedTitle(comp.id)), findsOneWidget);
+    expect(find.byKey(Tk.completedComment(comp.id)), findsOneWidget);
+    expect(find.byKey(Tk.completedPhoto(comp.id)), findsOneWidget);
+    expect(find.byKey(Tk.completedDate(comp.id)), findsOneWidget);
+  });
 }
-
-
 
 class ChildProfileHarness extends StatefulWidget {
   final QuestsRepository repo;
@@ -143,7 +128,7 @@ class _ChildProfileHarnessState extends State<ChildProfileHarness> {
                               a.previewUrl!,
                               key: Tk.completedPhoto(a.id),
                               errorBuilder: (_, _, _) =>
-                              const SizedBox(width: 40, height: 40),
+                                  const SizedBox(width: 40, height: 40),
                             ),
                           ),
                       ],
