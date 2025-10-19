@@ -2,12 +2,12 @@ import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/features/child_screen/models/quest_filter_model.dart';
 
 abstract class ChildQuestsService {
-  Future<List<ChildQuest>> getAssigned(
+  Stream<List<ChildQuest>> getAssigned(
     String childId, {
     QuestTimeFilter? filter,
   });
 
-  Future<List<ChildQuest>> getCompleted(
+  Stream<List<ChildQuest>> getCompleted(
     String childId, {
     QuestTimeFilter? filter,
   });

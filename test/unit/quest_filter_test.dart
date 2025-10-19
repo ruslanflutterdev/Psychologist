@@ -4,32 +4,34 @@ import 'package:heros_journey/features/child_screen/models/quest_filter_model.da
 import 'package:heros_journey/features/child_screen/models/time_filter_option.dart';
 import 'package:heros_journey/features/child_screen/repository/services/mock_child_quests_service.dart';
 
-// Вспомогательный класс для доступа к не-приватным полям в тестах (super.fieldName)
-class TestableMockChildQuestsService extends MockChildQuestsService {
-  // Доступ к полям теперь не требует "super." или "dynamic"
-  Map<String, List<ChildQuest>> get completedMap => completedQuests;
-  Map<String, List<ChildQuest>> get assignedMap => assignedQuests;
-
-  TestableMockChildQuestsService({super.latency});
-}
-
 
 void main() {
   group('Quest Filter Logic Unit Tests', () {
     // Используем фиксированную дату для тестирования пресетов и фильтрации
-    final fixedNow = DateTime(2025, 10, 19); // 19 Октября 2025
+    final fixedNow = DateTime(2025, 10, 19);
     final today = DateTime(2025, 10, 19);
     final yesterday = DateTime(2025, 10, 18);
     final lastWeek = DateTime(2025, 10, 12);
     final lastMonth = DateTime(2025, 9, 19);
     final nextDay = DateTime(2025, 10, 20);
 
-    // Создаем экземпляр тестового сервиса
-    final testableService = TestableMockChildQuestsService(latency: Duration.zero);
-    const childId = 'c1';
+    // Объявляем mockService здесь
+    late MockChildQuestsService mockService;
+
+    // ИСПРАВЛЕНИЕ: Используем ID, который hardcoded в mockService
+    const childId = '1';
     final baseQuest = const Quest(id: 'q1', title: 'Test', type: QuestType.cognitive);
 
-    // Вспомогательный метод для тестирования TimeFilterOptionX.toFilter() относительно фиксированной даты
+    // --- ИСПРАВЛЕНИЕ: Создаем новый экземпляр mockService перед каждым тестом для изоляции ---
+    setUp(() {
+      // Создаем мок без автоматического push'а начальных данных
+      mockService = MockChildQuestsService(latency: Duration.zero);
+      // Очищаем карты, чтобы тесты начинались с нуля.
+      mockService.assignedQuests.clear();
+      mockService.completedQuests.clear();
+    });
+
+    // Вспомогательный метод для тестирования TimeFilterOptionX.toFilter()
     QuestTimeFilter testToFilter(TimeFilterOption option, DateTime now) {
       final today = DateTime(now.year, now.month, now.day);
       switch (option) {
@@ -52,14 +54,17 @@ void main() {
     }
 
     // Helper to manually set mock state
-    void setMockCompleted(List<ChildQuest> completed) {
-      testableService.completedMap[childId] = completed;
+    void _setCompleted(List<ChildQuest> completed) {
+      mockService.completedQuests[childId] = completed;
     }
-    void setMockAssigned(List<ChildQuest> assigned) {
-      testableService.assignedMap[childId] = assigned;
+    void _setAssigned(List<ChildQuest> assigned) {
+      mockService.assignedQuests[childId] = assigned;
+    }
+    void _push() {
+      mockService.pushUpdates();
     }
 
-    // --- Тесты валидации диапазона дат (логика DateRangePickerDialog) ---
+    // --- Тесты валидации диапазона дат ---
     group('Date Range Validation', () {
       bool isDateRangeValid(DateTime? dateFrom, DateTime? dateTo) {
         if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
@@ -117,15 +122,21 @@ void main() {
     group('MockChildQuestsService Filtering', () {
 
       test('Unfiltered load возвращает все квесты', () async {
-        // Добавляем квесты
+        // Подписываемся на Future BEFORE push
+        final completedFuture = mockService.getCompleted(childId).first;
+        final assignedFuture = mockService.getAssigned(childId).first;
+
+        // Добавляем квесты и инициируем обновление Stream
         final completedQuest = ChildQuest(id: 'c1', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: today);
         final assignedQuest = ChildQuest(id: 'a1', childId: childId, quest: baseQuest, status: ChildQuestStatus.assigned);
 
-        setMockCompleted([completedQuest]);
-        setMockAssigned([assignedQuest]);
+        _setCompleted([completedQuest]);
+        _setAssigned([assignedQuest]);
+        _push();
 
-        final completed = await testableService.getCompleted(childId);
-        final assigned = await testableService.getAssigned(childId);
+        // Ожидаем завершения обеих Future
+        final completed = await completedFuture;
+        final assigned = await assignedFuture;
 
         expect(completed.length, 1, reason: 'Completed count should be 1');
         expect(assigned.length, 1, reason: 'Assigned count should be 1');
@@ -133,34 +144,42 @@ void main() {
 
       test('Фильтр "Сегодня" включает квесты сегодня и исключает завтра', () async {
         // Имитируем квесты с разными датами
-        final completedToday = ChildQuest(id: 'c1', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: today);
+        final completedToday = ChildQuest(id: 'c1', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: today.add(const Duration(hours: 1)));
         final completedYesterday = ChildQuest(id: 'c2', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: yesterday);
         final completedNextDay = ChildQuest(id: 'c3', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: nextDay);
 
-        setMockCompleted([completedToday, completedYesterday, completedNextDay]);
+        _setCompleted([completedToday, completedYesterday, completedNextDay]);
 
-        // Определяем фильтр (Сегодня: 2025-10-19)
+        // Определяем фильтр
         final filter = testToFilter(TimeFilterOption.today, fixedNow);
 
-        final filteredCompleted = await testableService.getCompleted(childId, filter: filter);
+        // Подписываемся и ждем обновления
+        final filteredCompletedFuture = mockService.getCompleted(childId, filter: filter).first;
+        _push();
+
+        final filteredCompleted = await filteredCompletedFuture;
 
         expect(filteredCompleted.length, 1, reason: 'Только завершенный сегодня квест должен быть включен');
         expect(filteredCompleted.first.id, completedToday.id);
       });
 
       test('Фильтр "Неделя" исключает квесты старше 7 дней', () async {
-        final sevenDaysAgo = lastWeek; // 2025-10-12
-        final eightDaysAgo = sevenDaysAgo.subtract(const Duration(days: 1)); // 2025-10-11
+        final sevenDaysAgo = lastWeek;
+        final eightDaysAgo = sevenDaysAgo.subtract(const Duration(days: 1));
 
         final completedSevenDaysAgo = ChildQuest(id: 'c1', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: sevenDaysAgo);
         final completedEightDaysAgo = ChildQuest(id: 'c2', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: eightDaysAgo);
 
-        setMockCompleted([completedSevenDaysAgo, completedEightDaysAgo]);
+        _setCompleted([completedSevenDaysAgo, completedEightDaysAgo]);
 
-        // Определяем фильтр (Неделя: 2025-10-12 to 2025-10-19)
+        // Определяем фильтр
         final filter = testToFilter(TimeFilterOption.week, fixedNow);
 
-        final filteredCompleted = await testableService.getCompleted(childId, filter: filter);
+        // Подписываемся и ждем обновления
+        final filteredCompletedFuture = mockService.getCompleted(childId, filter: filter).first;
+        _push();
+
+        final filteredCompleted = await filteredCompletedFuture;
 
         expect(filteredCompleted.length, 1, reason: 'Квест старше 7 дней должен быть исключен');
         expect(filteredCompleted.first.id, completedSevenDaysAgo.id);
@@ -171,14 +190,19 @@ void main() {
         final completedQuest = ChildQuest(id: 'c1', childId: childId, quest: baseQuest, status: ChildQuestStatus.completed, completedAt: today);
         final assignedQuest = ChildQuest(id: 'a1', childId: childId, quest: baseQuest, status: ChildQuestStatus.assigned);
 
-        setMockCompleted([completedQuest]);
-        setMockAssigned([assignedQuest]);
+        _setCompleted([completedQuest]);
+        _setAssigned([assignedQuest]);
 
         // Определяем неактивный фильтр
         final filter = QuestTimeFilter.inactive;
 
-        final filteredCompleted = await testableService.getCompleted(childId, filter: filter);
-        final filteredAssigned = await testableService.getAssigned(childId, filter: filter);
+        // Подписываемся на оба Stream и ждем обновления
+        final filteredCompletedFuture = mockService.getCompleted(childId, filter: filter).first;
+        final filteredAssignedFuture = mockService.getAssigned(childId, filter: filter).first;
+        _push(); // Push один раз
+
+        final filteredCompleted = await filteredCompletedFuture;
+        final filteredAssigned = await filteredAssignedFuture;
 
         expect(filteredCompleted.length, 1);
         expect(filteredAssigned.length, 1);
