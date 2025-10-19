@@ -32,18 +32,6 @@ class _ChildQuestsSectionState extends State<ChildQuestsSection> {
     });
   }
 
-  Future<(List<ChildQuest>, List<ChildQuest>)> _load() async {
-    final assigned = await widget.service.getAssigned(
-      widget.childId,
-      filter: _currentFilter,
-    );
-    final completed = await widget.service.getCompleted(
-      widget.childId,
-      filter: _currentFilter,
-    );
-    return (assigned, completed);
-  }
-
   Widget _buildLoadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 24),
@@ -71,70 +59,95 @@ class _ChildQuestsSectionState extends State<ChildQuestsSection> {
     );
   }
 
-  Widget _buildAssignedQuests(List<ChildQuest> assigned) {
-    if (assigned.isEmpty) {
-      return Text(
-        'Нет назначенных квестов ${_currentFilter.isActive ? "за выбранный период" : ""}',
-      );
+  Widget _buildQuestList(List<ChildQuest> quests, Widget emptyWidget) {
+    if (quests.isEmpty) {
+      return emptyWidget;
     }
-
     return Column(
       key: Tk.assignedList,
-      children: assigned.map((e) => AssignedQuestTile(item: e)).toList(),
+      children: quests.map((e) => AssignedQuestTile(item: e)).toList(),
     );
   }
 
-  Widget _buildCompletedQuests(
-    BuildContext context,
-    List<ChildQuest> completed,
-  ) {
+  Widget _buildCompletedList(List<ChildQuest> quests) {
+    if (quests.isEmpty) {
+      return Text(
+        'Пока нет выполненных заданий ${_currentFilter.isActive ? "за выбранный период" : ""}',
+      );
+    }
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text('Выполненные', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        if (completed.isEmpty)
-          Text(
-            'Пока нет выполненных заданий ${_currentFilter.isActive ? "за выбранный период" : ""}',
-          )
-        else
-          ...completed.map((e) => CompletedQuestTile(item: e)),
-      ],
+      children: quests.map((e) => CompletedQuestTile(item: e)).toList(),
     );
   }
 
-  Widget _buildContent(
-    BuildContext context,
-    List<ChildQuest> assigned,
-    List<ChildQuest> completed,
-  ) {
+  Widget _buildAssignedSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildHeader(context),
         const SizedBox(height: 8),
-        _buildAssignedQuests(assigned),
-        const SizedBox(height: 16),
-        _buildCompletedQuests(context, completed),
+        StreamBuilder<List<ChildQuest>>(
+          stream: widget.service.getAssigned(
+            widget.childId,
+            filter: _currentFilter,
+          ),
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
+              return _buildLoadingState();
+            }
+            if (snap.hasError && !snap.hasData) {
+              return _buildErrorState(snap.error);
+            }
+            final assigned = snap.data ?? [];
+            return _buildQuestList(
+              assigned,
+              Text(
+                'Нет назначенных квестов ${_currentFilter.isActive ? "за выбранный период" : ""}',
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompletedSection(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Выполненные', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        StreamBuilder<List<ChildQuest>>(
+          stream: widget.service.getCompleted(
+            widget.childId,
+            filter: _currentFilter,
+          ),
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
+              return _buildLoadingState();
+            }
+            if (snap.hasError && !snap.hasData) {
+              return _buildErrorState(snap.error);
+            }
+
+            final completed = snap.data ?? [];
+            return _buildCompletedList(completed);
+          },
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<(List<ChildQuest>, List<ChildQuest>)>(
-      future: _load(),
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return _buildLoadingState();
-        }
-        if (snap.hasError) {
-          return _buildErrorState(snap.error);
-        }
-        final assigned = snap.data!.$1;
-        final completed = snap.data!.$2;
-        return _buildContent(context, assigned, completed);
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildAssignedSection(context),
+        const SizedBox(height: 16),
+        _buildCompletedSection(context),
+      ],
     );
   }
 }

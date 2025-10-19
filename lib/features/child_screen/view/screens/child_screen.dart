@@ -42,8 +42,21 @@ class _ChildScreenState extends State<ChildScreen> {
       final c = await findChildById(widget.childId);
       if (!mounted) return;
       setState(() {
-        _child = c;
         _loadingChild = false;
+
+        if (c != null) {
+          _child = ChildModel(
+            id: c.id,
+            firstName: c.firstName,
+            lastName: c.lastName,
+            age: c.age,
+            gender: c.gender,
+            archetype: 'Герой',
+            updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
+          );
+        } else {
+          _child = null;
+        }
       });
     } catch (e) {
       if (!mounted) return;
@@ -73,7 +86,7 @@ class _ChildScreenState extends State<ChildScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Назначен квест: ${quest.title}')),
         );
-        setState(() {});
+        // Не нужно вызывать setState, так как ChildQuestsSection обновляется через Stream
       }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
@@ -96,7 +109,6 @@ class _ChildScreenState extends State<ChildScreen> {
   @override
   Widget build(BuildContext context) {
     final title = _child?.name ?? widget.childName;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Карточка ребёнка — $title'),
@@ -136,7 +148,7 @@ class _ChildScreenState extends State<ChildScreen> {
                   child: ChildQuestsSection(
                     childId: widget.childId,
                     service: ServiceRegistry.childQuests,
-                    onRefreshAfterChange: () => setState(() {}),
+                    onRefreshAfterChange: () {},
                   ),
                 ),
               ),
