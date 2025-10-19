@@ -5,8 +5,8 @@ import 'package:heros_journey/features/child_screen/repository/services/child_qu
 
 class MockChildQuestsService implements ChildQuestsService {
   final Duration latency;
-  final Map<String, List<ChildQuest>> _assigned = {};
-  final Map<String, List<ChildQuest>> _completed = {};
+  final Map<String, List<ChildQuest>> assignedQuests = {};
+  final Map<String, List<ChildQuest>> completedQuests = {};
 
   MockChildQuestsService({this.latency = const Duration(milliseconds: 250)});
 
@@ -22,6 +22,7 @@ class MockChildQuestsService implements ChildQuestsService {
         .subtract(const Duration(milliseconds: 1));
     final isAfterFrom = from == null || questDate.isAfter(from);
     final isBeforeTo = to == null || questDate.isBefore(to);
+
     return isAfterFrom && isBeforeTo;
   }
 
@@ -32,7 +33,7 @@ class MockChildQuestsService implements ChildQuestsService {
   }) async {
     await Future<void>.delayed(latency);
     final list = List<ChildQuest>.unmodifiable(
-      _assigned[childId] ?? const <ChildQuest>[],
+      assignedQuests[childId] ?? const <ChildQuest>[],
     );
     return list.where((q) => _isQuestInFilter(q, filter)).toList();
   }
@@ -44,7 +45,7 @@ class MockChildQuestsService implements ChildQuestsService {
   }) async {
     await Future<void>.delayed(latency);
     final list = List<ChildQuest>.unmodifiable(
-      _completed[childId] ?? const <ChildQuest>[],
+      completedQuests[childId] ?? const <ChildQuest>[],
     );
     return list.where((q) => _isQuestInFilter(q, filter)).toList();
   }
@@ -55,7 +56,7 @@ class MockChildQuestsService implements ChildQuestsService {
     required Quest quest,
   }) async {
     await Future<void>.delayed(latency);
-    final list = _assigned.putIfAbsent(childId, () => []);
+    final list = assignedQuests.putIfAbsent(childId, () => []);
     list.add(
       ChildQuest(
         id: 'assign-$childId-${DateTime.now().millisecondsSinceEpoch}',
@@ -75,7 +76,7 @@ class MockChildQuestsService implements ChildQuestsService {
     required DateTime completedAt,
   }) async {
     await Future<void>.delayed(latency);
-    final assigned = _assigned[childId];
+    final assigned = assignedQuests[childId];
     if (assigned == null) return;
     final idx = assigned.indexWhere((e) => e.id == assignedId);
     if (idx < 0) return;
@@ -87,7 +88,7 @@ class MockChildQuestsService implements ChildQuestsService {
       photoUrl: photoUrl,
       completedAt: completedAt,
     );
-    final completed = _completed.putIfAbsent(childId, () => []);
+    final completed = completedQuests.putIfAbsent(childId, () => []);
     completed.insert(0, done);
   }
 }
