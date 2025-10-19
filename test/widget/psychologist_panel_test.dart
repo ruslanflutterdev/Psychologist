@@ -42,7 +42,7 @@ void main() {
 
   setUp(() {
     mockPsychologistService = MockPsychologistService();
-    mockChildService = MockChildService(); // ИСПРАВЛЕНО: Корректная инициализация
+    mockChildService = MockChildService(); // Корректная инициализация
 
     // Инициализация ServiceRegistry моками
     ServiceRegistry.psychologist = mockPsychologistService;
@@ -125,6 +125,46 @@ void main() {
           await controller.close();
         });
 
+    testWidgets('Проверка перехода: При нажатии на ребенка открывается его карточка', (tester) async {
+      final childToOpen = initialChildren.first;
+      bool wasChildOpened = false;
+
+      // Mock the profile loading
+      when(() => mockPsychologistService.getProfile())
+          .thenAnswer((_) async => testProfile);
+
+      // Mock the children stream (ИСПРАВЛЕНИЕ: Добавлен мок перед pumpWidget)
+      final childStream = Stream.value(initialChildren);
+      when(() => mockChildService.getChildren()).thenAnswer((_) => childStream);
+
+      // Создаем функцию теста, которая захватывает попытку навигации
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PsychologistBody(
+              onOpenChild: (c) {
+                // Проверяем, что был передан нужный объект ChildModel
+                if (c.id == childToOpen.id) {
+                  wasChildOpened = true;
+                }
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Находим карточку первого ребенка и нажимаем
+      final childTileFinder = find.text(childToOpen.name);
+      expect(childTileFinder, findsOneWidget);
+      await tester.tap(childTileFinder);
+      await tester.pump();
+
+      // Проверяем, что обработчик навигации был вызван
+      expect(wasChildOpened, isTrue, reason: 'onOpenChild callback должен быть вызван.');
+    });
+
     testWidgets(
         'Проверка пустого состояния: Если список детей пуст, виджеты списка отсутствуют',
             (tester) async {
@@ -135,7 +175,8 @@ void main() {
           await tester.pumpWidget(createWidgetUnderTest(childStream: emptyStream));
           await tester.pumpAndSettle();
 
-          // Проверяем, что нет ChildTile
+          // Проверяем, что отображается сообщение "Детей пока нет"
+          expect(find.text('Детей пока нет'), findsOneWidget);
           expect(find.byType(ChildTile), findsNothing);
         });
 
