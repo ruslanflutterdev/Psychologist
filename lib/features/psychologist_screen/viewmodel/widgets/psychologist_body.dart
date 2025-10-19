@@ -14,7 +14,7 @@ class PsychologistBody extends StatelessWidget {
   Future<PsychologistModel> _loadProfile() =>
       ServiceRegistry.psychologist.getProfile();
 
-  Future<List<ChildModel>> _loadChildren() =>
+  Stream<List<ChildModel>> _streamChildren() =>
       ServiceRegistry.child.getChildren();
 
   @override
@@ -34,12 +34,14 @@ class PsychologistBody extends StatelessWidget {
           children: [
             header,
             Expanded(
-              child: FutureBuilder<List<ChildModel>>(
-                future: _loadChildren(),
+              child: StreamBuilder<List<ChildModel>>(
+                stream: _streamChildren(),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      snapshot.data == null) {
                     return const Center(child: CircularProgressIndicator());
                   }
+
                   if (snapshot.hasError) {
                     return Center(
                       child: Text('Ошибка загрузки: ${snapshot.error}'),

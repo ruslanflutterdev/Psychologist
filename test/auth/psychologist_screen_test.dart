@@ -17,6 +17,7 @@ import 'package:mocktail/mocktail.dart';
 
 // Мок-класс для AuthService, необходим для проверки вызова logout и clearAllLocalData
 class MockAuthService extends Mock implements AuthService {
+  @override
   Future<void> clearAllLocalData() =>
       super.noSuchMethod(Invocation.method(#clearAllLocalData, []));
 }
@@ -54,19 +55,20 @@ void main() {
     // --- ИСПРАВЛЕНО: Добавлено мокирование stream и close() для совместимости с BlocProvider ---
     when(
       () => mockSessionCubit.stream,
-    ).thenAnswer((_) => Stream<UserSessionModel?>.empty());
+    ).thenAnswer((_) => const Stream<UserSessionModel?>.empty());
     when(() => mockSessionCubit.close()).thenAnswer((_) => Future.value());
 
     // --- НАСТРОЙКА MOCK-СЕРВИСОВ ---
     // Для успешной загрузки PsychologistScreen и Body:
     when(() => mockPsychologistService.getProfile()).thenAnswer(
-      (_) => Future.value(
+          (_) => Future.value(
         const PsychologistModel(firstName: 'Test', lastName: 'User'),
       ),
     );
+    // ИСПРАВЛЕНО: Возвращаем Stream<List<ChildModel>>
     when(
-      () => mockChildService.getChildren(),
-    ).thenAnswer((_) => Future.value(<ChildModel>[]));
+          () => mockChildService.getChildren(),
+    ).thenAnswer((_) => Stream.value(const <ChildModel>[]));
 
     // Переопределение ServiceRegistry для использования моков
     ServiceRegistry.auth = mockAuthService;

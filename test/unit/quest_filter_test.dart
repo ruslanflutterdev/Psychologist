@@ -27,7 +27,7 @@ void main() {
     // Создаем экземпляр тестового сервиса
     final testableService = TestableMockChildQuestsService(latency: Duration.zero);
     const childId = 'c1';
-    final baseQuest = Quest(id: 'q1', title: 'Test', type: QuestType.cognitive);
+    final baseQuest = const Quest(id: 'q1', title: 'Test', type: QuestType.cognitive);
 
     // Вспомогательный метод для тестирования TimeFilterOptionX.toFilter() относительно фиксированной даты
     QuestTimeFilter testToFilter(TimeFilterOption option, DateTime now) {
