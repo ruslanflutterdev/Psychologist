@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
+import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/child_screen/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/repository/find_child_by_id.dart';
+import 'package:heros_journey/features/child_screen/repository/services/mock_child_quests_service.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/assign_quest_dialog.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_error_text.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_info_card.dart';
@@ -69,6 +72,9 @@ class _ChildScreenState extends State<ChildScreen> {
   }
 
   Future<void> _assignQuestFlow() async {
+    final session = context.read<SessionCubit>().state;
+    final currentUserId = session?.token ?? 'MOCK_PSYCH_ID';
+
     setState(() => _isAssigning = true);
     try {
       final quest = await showDialog<Quest>(
@@ -77,19 +83,28 @@ class _ChildScreenState extends State<ChildScreen> {
             AssignQuestDialog(catalog: ServiceRegistry.questCatalog),
       );
       if (!mounted) return;
+
       if (quest != null) {
         await ServiceRegistry.childQuests.assignQuest(
           childId: widget.childId,
           quest: quest,
+          assignedBy: currentUserId,
         );
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Назначен квест: ${quest.title}')),
+          SnackBar(content: Text('Квест "${quest.title}" назначен ребёнку.')),
         );
-        // Не нужно вызывать setState, так как ChildQuestsSection обновляется через Stream
+      }
+    } on DuplicateQuestException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) {
+        setState(() => _error = 'Ошибка назначения квеста: ${e.toString()}');
+      }
     } finally {
       if (mounted) setState(() => _isAssigning = false);
     }
@@ -109,6 +124,7 @@ class _ChildScreenState extends State<ChildScreen> {
   @override
   Widget build(BuildContext context) {
     final title = _child?.name ?? widget.childName;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Карточка ребёнка — $title'),

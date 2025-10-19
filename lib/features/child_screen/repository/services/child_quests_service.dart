@@ -12,7 +12,11 @@ abstract class ChildQuestsService {
     QuestTimeFilter? filter,
   });
 
-  Future<void> assignQuest({required String childId, required Quest quest});
+  Future<void> assignQuest({
+    required String childId,
+    required Quest quest,
+    required String assignedBy,
+  });
 
   Future<void> completeQuest({
     required String childId,
