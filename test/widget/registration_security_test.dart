@@ -18,6 +18,7 @@ class MockSessionCubit extends Mock implements SessionCubit {}
 // Fakes
 class UserSessionModelFake extends Fake implements UserSessionModel {}
 
+
 // Utility function to find the password fields
 Finder findPasswordField(String labelText) => find.widgetWithText(TextFormField, labelText);
 
