@@ -5,7 +5,7 @@ import 'package:heros_journey/features/child_screen/models/quest_filter_model.da
 import 'package:heros_journey/features/child_screen/repository/services/child_quests_service.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/assigned_quest_tile.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/completed_quest_tile.dart';
-import 'package:heros_journey/features/child_screen/view/widgets/quest_time_filter.dart';
+import 'package:heros_journey/features/child_screen/view_model/widgets/quest_time_filter.dart';
 
 class ChildQuestsSection extends StatefulWidget {
   final String childId;

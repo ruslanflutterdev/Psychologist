@@ -16,42 +16,18 @@ class MockChildQuestsService implements ChildQuestsService {
   final Duration latency;
   final Map<String, List<ChildQuest>> assignedQuests = {};
   final Map<String, List<ChildQuest>> completedQuests = {};
-
-  final _controller =
-      StreamController<Map<String, List<ChildQuest>>>.broadcast();
+  final _controller = StreamController<void>.broadcast();
 
   MockChildQuestsService({this.latency = const Duration(milliseconds: 250)}) {
     _setupInitialData();
   }
 
   void _setupInitialData() {
-    assignedQuests['1'] = [
-      const ChildQuest(
-        id: 'a1',
-        childId: '1',
-        quest: Quest(
-          id: 'q1',
-          title: 'Утренняя зарядка',
-          type: QuestType.physical,
-        ),
-        status: ChildQuestStatus.assigned,
-      ),
-      const ChildQuest(
-        id: 'a2',
-        childId: '1',
-        quest: Quest(
-          id: 'q2',
-          title: 'Прочитать 5 страниц',
-          type: QuestType.cognitive,
-        ),
-        status: ChildQuestStatus.assigned,
-      ),
-    ];
     completedQuests['1'] = [
       ChildQuest(
         id: 'c1',
         childId: '1',
-        quest: const Quest(
+        quest: Quest(
           id: 'q3',
           title: 'Дневник эмоций',
           type: QuestType.emotional,
@@ -63,29 +39,10 @@ class MockChildQuestsService implements ChildQuestsService {
       ),
     ];
     pushUpdates();
-
-    Future.delayed(const Duration(seconds: 5), () {
-      assignedQuests['1']!.add(
-        const ChildQuest(
-          id: 'a3',
-          childId: '1',
-          quest: Quest(
-            id: 'q4',
-            title: 'Новый квест (Realtime)',
-            type: QuestType.social,
-          ),
-          status: ChildQuestStatus.assigned,
-        ),
-      );
-      pushUpdates();
-    });
   }
 
   void pushUpdates() {
-    _controller.add({
-      'assigned': assignedQuests['1'] ?? [],
-      'completed': completedQuests['1'] ?? [],
-    });
+    _controller.add(null);
   }
 
   bool _isQuestInFilter(ChildQuest quest, QuestTimeFilter? filter) {
@@ -107,22 +64,28 @@ class MockChildQuestsService implements ChildQuestsService {
   Stream<List<ChildQuest>> getAssigned(
     String childId, {
     QuestTimeFilter? filter,
-  }) {
-    return _controller.stream.map((maps) {
-      final list = maps['assigned'] ?? [];
-      return list.where((q) => _isQuestInFilter(q, filter)).toList();
-    });
+  }) async* {
+    yield (assignedQuests[childId] ?? [])
+        .where((q) => _isQuestInFilter(q, filter))
+        .toList();
+    await for (final _ in _controller.stream) {
+      final list = assignedQuests[childId] ?? [];
+      yield list.where((q) => _isQuestInFilter(q, filter)).toList();
+    }
   }
 
   @override
   Stream<List<ChildQuest>> getCompleted(
     String childId, {
     QuestTimeFilter? filter,
-  }) {
-    return _controller.stream.map((maps) {
-      final list = maps['completed'] ?? [];
-      return list.where((q) => _isQuestInFilter(q, filter)).toList();
-    });
+  }) async* {
+    yield (completedQuests[childId] ?? [])
+        .where((q) => _isQuestInFilter(q, filter))
+        .toList();
+    await for (final _ in _controller.stream) {
+      final list = completedQuests[childId] ?? [];
+      yield list.where((q) => _isQuestInFilter(q, filter)).toList();
+    }
   }
 
   @override
@@ -145,7 +108,6 @@ class MockChildQuestsService implements ChildQuestsService {
       childId: childId,
       quest: quest,
       status: ChildQuestStatus.assigned,
-      completedAt: DateTime.now(),
     );
 
     list.add(newQuest);

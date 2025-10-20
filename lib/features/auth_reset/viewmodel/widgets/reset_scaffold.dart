@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:heros_journey/features/auth_reset/view/widgets/reset_form.dart';
-import 'package:heros_journey/features/auth_reset/view/widgets/reset_listener.dart';
+import 'package:heros_journey/features/auth_reset/viewmodel/widgets/reset_form.dart';
+import 'package:heros_journey/features/auth_reset/viewmodel/widgets/reset_listener.dart';
 
 class ResetScaffold extends StatelessWidget {
   const ResetScaffold({super.key});

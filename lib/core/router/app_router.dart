@@ -12,6 +12,7 @@ import 'package:heros_journey/features/auth_registration/viewmodel/registration/
 import 'package:heros_journey/features/auth_reset/view/screens/reset_screen.dart';
 import 'package:heros_journey/features/auth_reset/viewmodel/reset_bloc.dart';
 import 'package:heros_journey/features/psychologist_screen/view/screens/psychologist_screen.dart';
+import 'package:heros_journey/features/quest_catalog/view/screens/quests_catalog_screen.dart';
 
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -62,6 +63,11 @@ class AppRouter {
             create: (_) => ResetBloc(auth: ServiceRegistry.auth),
             child: const ResetScreen(),
           ),
+        );
+      case '/quests_catalog':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const QuestsCatalogScreen(),
         );
       default:
         return _redirect('/login');
