@@ -34,6 +34,10 @@ class PsychologistScreen extends StatelessWidget {
     );
   }
 
+  void _openQuestsCatalog(BuildContext context) {
+    Navigator.of(context).pushNamed('/quests_catalog');
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -46,6 +50,11 @@ class PsychologistScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Панель психолога'),
           actions: [
+            IconButton(
+              onPressed: () => _openQuestsCatalog(context),
+              icon: const Icon(Icons.library_books),
+              tooltip: 'Каталог квестов',
+            ),
             TextButton.icon(
               onPressed: () => _logout(context),
               icon: const Icon(Icons.logout),

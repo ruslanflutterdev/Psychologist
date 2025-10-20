@@ -20,15 +20,43 @@ extension QuestTypeX on QuestType {
 class Quest {
   final String id;
   final String title;
+  final String description;
   final QuestType type;
+  final int xp;
   final bool active;
+  final String createdBy;
+  final DateTime updatedAt;
 
-  const Quest({
+  Quest({
     required this.id,
     required this.title,
+    this.description = '',
     required this.type,
+    this.xp = 0,
     this.active = true,
-  });
+    this.createdBy = 'SYSTEM',
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? DateTime.now();
+
+  Quest copyWith({
+    String? title,
+    String? description,
+    QuestType? type,
+    int? xp,
+    bool? active,
+    DateTime? updatedAt,
+  }) {
+    return Quest(
+      id: id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      xp: xp ?? this.xp,
+      active: active ?? this.active,
+      createdBy: createdBy,
+      updatedAt: updatedAt ?? DateTime.now(),
+    );
+  }
 }
 
 enum ChildQuestStatus { assigned, completed }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:heros_journey/features/auth_registration/view/widgets/registration_card.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/registration_card.dart';
 
 class RegistrationScreen extends StatelessWidget {
   const RegistrationScreen({super.key});

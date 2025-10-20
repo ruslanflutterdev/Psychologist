@@ -15,9 +15,13 @@ class MockProgressService implements ProgressService {
   void _setupInitialData() {
     const max = 100;
 
-    _progressCache['1'] =  ChildProgressModel(
+    _progressCache['1'] = ChildProgressModel(
       childId: '1',
-      pq: 55, eq: 68, iq: 72, soq: 60, sq: 50,
+      pq: 55,
+      eq: 68,
+      iq: 72,
+      soq: 60,
+      sq: 50,
       max: max,
       updatedAt: DateTime(2025, 10, 19, 9, 30),
     );
@@ -40,7 +44,10 @@ class MockProgressService implements ProgressService {
       throw Exception('NETWORK: Сеть недоступна. Повторите позже.');
     }
     yield _progressCache[childId];
-    final updateStream = Stream.periodic(const Duration(milliseconds: 100), (i) => i).take(100);
+    final updateStream = Stream.periodic(
+      const Duration(milliseconds: 100),
+      (i) => i,
+    ).take(100);
     await for (final _ in updateStream) {
       final latestData = _progressCache[childId];
       if (latestData != null) {

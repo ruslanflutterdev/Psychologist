@@ -4,7 +4,7 @@ import 'package:heros_journey/features/child_screen/repository/services/parent_c
 import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_add_button.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_details_card.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_error.dart';
-import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_form_dialog.dart';
+import 'package:heros_journey/features/child_screen/view_model/parents_widgets/parent_contact_form_dialog.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/parents_widgets/parent_contact_loading.dart';
 
 class ParentContactCard extends StatefulWidget {
