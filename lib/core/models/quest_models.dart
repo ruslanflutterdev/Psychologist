@@ -21,18 +21,23 @@ class Quest {
   final String id;
   final String title;
   final QuestType type;
-  const Quest({required this.id, required this.title, required this.type});
+  final bool active;
+
+  const Quest({
+    required this.id,
+    required this.title,
+    required this.type,
+    this.active = true,
+  });
 }
 
 enum ChildQuestStatus { assigned, completed }
 
 class ChildQuest {
-  final String id; // уникальный id назначения
+  final String id;
   final String childId;
   final Quest quest;
   final ChildQuestStatus status;
-
-  // только для completed:
   final String? childComment;
   final String? photoUrl;
   final DateTime? completedAt;

@@ -4,9 +4,10 @@ import 'package:heros_journey/core/services/quest_catalog_service.dart';
 
 class MockQuestCatalogService implements QuestCatalogService {
   final Duration latency;
+
   MockQuestCatalogService({this.latency = const Duration(milliseconds: 250)});
 
-  static const _q = <Quest>[
+  static const _allQuests = <Quest>[
     Quest(id: 'q-p-1', title: '5 минут зарядки', type: QuestType.physical),
     Quest(id: 'q-p-2', title: 'Прогулка 15 минут', type: QuestType.physical),
     Quest(
@@ -45,11 +46,17 @@ class MockQuestCatalogService implements QuestCatalogService {
       type: QuestType.spiritual,
     ),
     Quest(id: 'q-sp-2', title: 'Нарисовать мечту', type: QuestType.spiritual),
+    Quest(
+      id: 'q-inactive',
+      title: 'Архивный квест',
+      type: QuestType.physical,
+      active: false,
+    ),
   ];
 
   @override
   Future<List<Quest>> getAll() async {
     await Future<void>.delayed(latency);
-    return _q;
+    return _allQuests.where((q) => q.active).toList();
   }
 }

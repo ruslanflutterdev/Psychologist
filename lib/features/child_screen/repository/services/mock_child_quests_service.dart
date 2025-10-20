@@ -3,6 +3,15 @@ import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/features/child_screen/models/quest_filter_model.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_quests_service.dart';
 
+class DuplicateQuestException implements Exception {
+  final String message;
+
+  DuplicateQuestException(this.message);
+
+  @override
+  String toString() => 'DuplicateQuestException: $message';
+}
+
 class MockChildQuestsService implements ChildQuestsService {
   final Duration latency;
   final Map<String, List<ChildQuest>> assignedQuests = {};
@@ -120,17 +129,26 @@ class MockChildQuestsService implements ChildQuestsService {
   Future<void> assignQuest({
     required String childId,
     required Quest quest,
+    required String assignedBy,
   }) async {
     await Future<void>.delayed(latency);
     final list = assignedQuests.putIfAbsent(childId, () => []);
-    list.add(
-      ChildQuest(
-        id: 'assign-${DateTime.now().millisecondsSinceEpoch}',
-        childId: childId,
-        quest: quest,
-        status: ChildQuestStatus.assigned,
-      ),
+    final isDuplicate = list.any((q) => q.quest.id == quest.id);
+    if (isDuplicate) {
+      throw DuplicateQuestException(
+        'Квест "${quest.title}" уже назначен этому ребёнку.',
+      );
+    }
+
+    final newQuest = ChildQuest(
+      id: 'assign-${DateTime.now().millisecondsSinceEpoch}',
+      childId: childId,
+      quest: quest,
+      status: ChildQuestStatus.assigned,
+      completedAt: DateTime.now(),
     );
+
+    list.add(newQuest);
     pushUpdates();
   }
 
@@ -157,7 +175,6 @@ class MockChildQuestsService implements ChildQuestsService {
     );
     final completed = completedQuests.putIfAbsent(childId, () => []);
     completed.insert(0, done);
-
     pushUpdates();
   }
 }
