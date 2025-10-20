@@ -6,24 +6,46 @@ class MockProgressService implements ProgressService {
   Duration latency = const Duration(milliseconds: 450);
   bool failNetwork = false;
 
+  final Map<String, ChildProgressModel> _progressCache = {};
+
+  MockProgressService() {
+    _setupInitialData();
+  }
+
+  void _setupInitialData() {
+    const max = 100;
+
+    _progressCache['1'] =  ChildProgressModel(
+      childId: '1',
+      pq: 55, eq: 68, iq: 72, soq: 60, sq: 50,
+      max: max,
+      updatedAt: DateTime(2025, 10, 19, 9, 30),
+    );
+
+    Future.delayed(const Duration(seconds: 5), () {
+      if (_progressCache.containsKey('1')) {
+        final updated = _progressCache['1']!.copyWith(
+          pq: 80,
+          updatedAt: DateTime.now(),
+        );
+        _progressCache['1'] = updated;
+      }
+    });
+  }
+
   @override
-  Future<ChildProgressModel> getChildProgress(String childId) async {
+  Stream<ChildProgressModel?> getChildProgress(String childId) async* {
     await Future<void>.delayed(latency);
     if (failNetwork) {
       throw Exception('NETWORK: Сеть недоступна. Повторите позже.');
     }
-
-    const max = 100;
-    final seed = childId.hashCode.abs() % 20;
-    return ChildProgressModel(
-      childId: childId,
-      pq: 55 + (seed % 10),
-      eq: 68 - (seed % 7),
-      iq: 72 - (seed % 5),
-      soq: 60 + (seed % 12),
-      sq: 50 + (seed % 8),
-      max: max,
-      updatedAt: DateTime.now(),
-    );
+    yield _progressCache[childId];
+    final updateStream = Stream.periodic(const Duration(milliseconds: 100), (i) => i).take(100);
+    await for (final _ in updateStream) {
+      final latestData = _progressCache[childId];
+      if (latestData != null) {
+        yield latestData;
+      }
+    }
   }
 }

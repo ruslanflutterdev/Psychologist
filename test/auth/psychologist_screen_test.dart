@@ -61,13 +61,13 @@ void main() {
     // --- НАСТРОЙКА MOCK-СЕРВИСОВ ---
     // Для успешной загрузки PsychologistScreen и Body:
     when(() => mockPsychologistService.getProfile()).thenAnswer(
-          (_) => Future.value(
+      (_) => Future.value(
         const PsychologistModel(firstName: 'Test', lastName: 'User'),
       ),
     );
     // ИСПРАВЛЕНО: Возвращаем Stream<List<ChildModel>>
     when(
-          () => mockChildService.getChildren(),
+      () => mockChildService.getChildren(),
     ).thenAnswer((_) => Stream.value(const <ChildModel>[]));
 
     // Переопределение ServiceRegistry для использования моков

@@ -92,7 +92,8 @@ class _ChildQuestsSectionState extends State<ChildQuestsSection> {
             filter: _currentFilter,
           ),
           builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
+            if (snap.connectionState == ConnectionState.waiting &&
+                !snap.hasData) {
               return _buildLoadingState();
             }
             if (snap.hasError && !snap.hasData) {
@@ -124,7 +125,8 @@ class _ChildQuestsSectionState extends State<ChildQuestsSection> {
             filter: _currentFilter,
           ),
           builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
+            if (snap.connectionState == ConnectionState.waiting &&
+                !snap.hasData) {
               return _buildLoadingState();
             }
             if (snap.hasError && !snap.hasData) {

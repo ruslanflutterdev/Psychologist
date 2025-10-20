@@ -9,7 +9,7 @@ class MockChildQuestsService implements ChildQuestsService {
   final Map<String, List<ChildQuest>> completedQuests = {};
 
   final _controller =
-  StreamController<Map<String, List<ChildQuest>>>.broadcast();
+      StreamController<Map<String, List<ChildQuest>>>.broadcast();
 
   MockChildQuestsService({this.latency = const Duration(milliseconds: 250)}) {
     _setupInitialData();
@@ -96,9 +96,9 @@ class MockChildQuestsService implements ChildQuestsService {
 
   @override
   Stream<List<ChildQuest>> getAssigned(
-      String childId, {
-        QuestTimeFilter? filter,
-      }) {
+    String childId, {
+    QuestTimeFilter? filter,
+  }) {
     return _controller.stream.map((maps) {
       final list = maps['assigned'] ?? [];
       return list.where((q) => _isQuestInFilter(q, filter)).toList();
@@ -107,9 +107,9 @@ class MockChildQuestsService implements ChildQuestsService {
 
   @override
   Stream<List<ChildQuest>> getCompleted(
-      String childId, {
-        QuestTimeFilter? filter,
-      }) {
+    String childId, {
+    QuestTimeFilter? filter,
+  }) {
     return _controller.stream.map((maps) {
       final list = maps['completed'] ?? [];
       return list.where((q) => _isQuestInFilter(q, filter)).toList();
