@@ -4,6 +4,8 @@ abstract class AuthService {
   Future<UserSessionModel> registerPsychologist({
     required String email,
     required String password,
+    required String firstName,
+    required String lastName,
   });
 
   Future<UserSessionModel> loginPsychologist({

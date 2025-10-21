@@ -121,13 +121,13 @@ void main() {
       when(
         () => mockAuth.registerPsychologist(
           email: any(named: 'email'),
-          password: any(named: 'password'),
+          password: any(named: 'password'), firstName: '', lastName: '',
         ),
       ).thenAnswer(
         (_) async => const UserSessionModel(
           token: 'token',
           role: 'psych',
-          email: validEmail,
+          email: validEmail, firstName: '', lastName: '',
         ),
       );
 
@@ -137,7 +137,7 @@ void main() {
       verify(
         () => mockAuth.registerPsychologist(
           email: validEmail,
-          password: validPassword,
+          password: validPassword, firstName: '', lastName: '',
         ),
       ).called(1);
     },

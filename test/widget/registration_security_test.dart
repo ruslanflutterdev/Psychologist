@@ -42,10 +42,10 @@ void main() {
     when(
       () => mockAuth.registerPsychologist(
         email: any(named: 'email'),
-        password: any(named: 'password'),
+        password: any(named: 'password'), firstName: '', lastName: '',
       ),
     ).thenAnswer(
-      (_) async => const UserSessionModel(token: 't', role: 'p', email: 'e'),
+      (_) async => const UserSessionModel(token: 't', role: 'p', email: 'e', firstName: '', lastName: ''),
     );
 
     // Для виджет-теста устанавливаем mockAuth в ServiceRegistry
@@ -162,7 +162,7 @@ void main() {
       verify(
         () => mockAuth.registerPsychologist(
           email: 'test@example.com',
-          password: 'Correct1!',
+          password: 'Correct1!', firstName: '', lastName: '',
         ),
       ).called(1);
     });

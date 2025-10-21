@@ -11,7 +11,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final SessionCubit sessionCubit;
 
   RegistrationBloc({required this.auth, required this.sessionCubit})
-    : super(RegistrationState.initial) {
+    : super(const RegistrationState()) {
     on<RegistrationSubmitted>(_onSubmit);
     on<RegistrationBackPressed>(_onBack);
   }
@@ -20,27 +20,29 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
     RegistrationSubmitted e,
     Emitter<RegistrationState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, isSuccess: false));
+    emit(
+      state.copyWith(status: RegistrationStatus.submitting),
+    );
     try {
       final UserSessionModel session = await auth.registerPsychologist(
         email: e.email,
         password: e.password,
+        firstName: e.firstName,
+        lastName: e.lastName,
       );
       sessionCubit.save(session);
-      emit(state.copyWith(isLoading: false, isSuccess: true));
+      emit(state.copyWith(status: RegistrationStatus.success));
     } on AuthException catch (err) {
       emit(
         state.copyWith(
-          isLoading: false,
-          isSuccess: false,
+          status: RegistrationStatus.error,
           errorMessage: err.message,
         ),
       );
     } catch (_) {
       emit(
         state.copyWith(
-          isLoading: false,
-          isSuccess: false,
+          status: RegistrationStatus.error,
           errorMessage: 'Неизвестная ошибка. Повторите попытку.',
         ),
       );

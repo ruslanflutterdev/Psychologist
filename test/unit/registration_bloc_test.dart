@@ -7,6 +7,7 @@ import 'package:heros_journey/features/auth_registration/repository/services/aut
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_event.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_state.dart';
+import 'package:heros_journey/features/psychologist_screen/model/psychologist_model.dart'; // [!code addition]
 import 'package:mocktail/mocktail.dart';
 
 // Mocks
@@ -23,6 +24,11 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(UserSessionModelFake());
+    // Регистрация fallback-значений для регистрации психолога с ФИО
+    registerFallbackValue('test@example.com');
+    registerFallbackValue('password123');
+    registerFallbackValue('Test');
+    registerFallbackValue('User');
   });
 
   setUp(() {
@@ -33,10 +39,14 @@ void main() {
   group('RegistrationBloc', () {
     const email = 'test@example.com';
     const password = 'password123';
+    const firstName = 'Test'; // [!code addition]
+    const lastName = 'User';   // [!code addition]
     const userSession = UserSessionModel(
       token: 'token',
-      role: 'psych',
+      role: 'psychologist', // [!code change]
       email: email,
+      firstName: firstName, // [!code addition]
+      lastName: lastName,   // [!code addition]
     );
 
     blocTest<RegistrationBloc, RegistrationState>(
@@ -45,19 +55,24 @@ void main() {
         auth: mockAuthService,
         sessionCubit: mockSessionCubit,
       ),
+      // [!code change] Проверяем, что состояние инициализировано правильно
       expect: () => <dynamic>[],
       verify: (bloc) {
-        expect(bloc.state, RegistrationState.initial);
+        expect(bloc.state.status, RegistrationStatus.initial); // [!code change]
+        expect(bloc.state.role, Role.psychologist);            // [!code addition]
       },
     );
 
     blocTest<RegistrationBloc, RegistrationState>(
-      'при успешной регистрации emit: isLoading -> isSuccess',
+      'при успешной регистрации emit: submitting -> success',
       build: () {
         when(
-          () => mockAuthService.registerPsychologist(
+          // [!code change] Обновление сигнатуры с ФИО
+              () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
+            firstName: firstName,
+            lastName: lastName,
           ),
         ).thenAnswer((_) async => userSession);
         when(() => mockSessionCubit.save(userSession)).thenReturn(null);
@@ -66,17 +81,29 @@ void main() {
           sessionCubit: mockSessionCubit,
         );
       },
-      act: (bloc) =>
-          bloc.add(RegistrationSubmitted(email: email, password: password)),
+      // [!code change] Передача ФИО в событие
+      act: (bloc) => bloc.add(RegistrationSubmitted(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+      )),
       expect: () => [
-        isA<RegistrationState>().having((s) => s.isLoading, 'isLoading', true),
-        isA<RegistrationState>().having((s) => s.isSuccess, 'isSuccess', true),
+        // [!code change] Проверяем статус 'submitting'
+        isA<RegistrationState>().having(
+                (s) => s.status, 'status', RegistrationStatus.submitting),
+        // [!code change] Проверяем статус 'success'
+        isA<RegistrationState>()
+            .having((s) => s.status, 'status', RegistrationStatus.success),
       ],
       verify: (_) {
         verify(
-          () => mockAuthService.registerPsychologist(
+          // [!code change] Проверка вызова с ФИО
+              () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
+            firstName: firstName,
+            lastName: lastName,
           ),
         ).called(1);
         verify(() => mockSessionCubit.save(userSession)).called(1);
@@ -84,12 +111,15 @@ void main() {
     );
 
     blocTest<RegistrationBloc, RegistrationState>(
-      'при ошибке AuthException emit: isLoading -> errorMessage',
+      'при ошибке AuthException emit: submitting -> error with message',
       build: () {
         when(
-          () => mockAuthService.registerPsychologist(
+          // [!code change] Обновление сигнатуры с ФИО
+              () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
+            firstName: firstName,
+            lastName: lastName,
           ),
         ).thenThrow(AuthException('code', 'Test error message'));
         return RegistrationBloc(
@@ -97,21 +127,33 @@ void main() {
           sessionCubit: mockSessionCubit,
         );
       },
-      act: (bloc) =>
-          bloc.add(RegistrationSubmitted(email: email, password: password)),
+      // [!code change] Передача ФИО в событие
+      act: (bloc) => bloc.add(RegistrationSubmitted(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+      )),
       expect: () => [
-        isA<RegistrationState>().having((s) => s.isLoading, 'isLoading', true),
+        // [!code change] Проверяем статус 'submitting'
         isA<RegistrationState>().having(
-          (s) => s.errorMessage,
+                (s) => s.status, 'status', RegistrationStatus.submitting),
+        isA<RegistrationState>()
+            .having((s) => s.status, 'status', RegistrationStatus.error) // [!code change]
+            .having(
+              (s) => s.errorMessage,
           'errorMessage',
           'Test error message',
         ),
       ],
       verify: (_) {
         verify(
-          () => mockAuthService.registerPsychologist(
+          // [!code change] Проверка вызова с ФИО
+              () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
+            firstName: firstName,
+            lastName: lastName,
           ),
         ).called(1);
         verifyNever(() => mockSessionCubit.save(any()));
@@ -119,12 +161,15 @@ void main() {
     );
 
     blocTest<RegistrationBloc, RegistrationState>(
-      'при неизвестной ошибке emit: isLoading -> generic error message',
+      'при неизвестной ошибке emit: submitting -> generic error message',
       build: () {
         when(
-          () => mockAuthService.registerPsychologist(
+          // [!code change] Обновление сигнатуры с ФИО
+              () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
+            firstName: firstName,
+            lastName: lastName,
           ),
         ).thenThrow(Exception('Unknown'));
         return RegistrationBloc(
@@ -132,21 +177,33 @@ void main() {
           sessionCubit: mockSessionCubit,
         );
       },
-      act: (bloc) =>
-          bloc.add(RegistrationSubmitted(email: email, password: password)),
+      // [!code change] Передача ФИО в событие
+      act: (bloc) => bloc.add(RegistrationSubmitted(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+      )),
       expect: () => [
-        isA<RegistrationState>().having((s) => s.isLoading, 'isLoading', true),
+        // [!code change] Проверяем статус 'submitting'
         isA<RegistrationState>().having(
-          (s) => s.errorMessage,
+                (s) => s.status, 'status', RegistrationStatus.submitting),
+        isA<RegistrationState>()
+            .having((s) => s.status, 'status', RegistrationStatus.error) // [!code change]
+            .having(
+              (s) => s.errorMessage,
           'errorMessage',
           'Неизвестная ошибка. Повторите попытку.',
         ),
       ],
       verify: (_) {
         verify(
-          () => mockAuthService.registerPsychologist(
+          // [!code change] Проверка вызова с ФИО
+              () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
+            firstName: firstName,
+            lastName: lastName,
           ),
         ).called(1);
         verifyNever(() => mockSessionCubit.save(any()));
