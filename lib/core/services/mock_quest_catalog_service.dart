@@ -19,7 +19,7 @@ class MockQuestCatalogService implements QuestCatalogService {
   final List<Quest> _quests = [];
   bool _isInitialized = false;
 
-  MockQuestCatalogService({this.latency = const Duration(milliseconds: 250)}) {}
+  MockQuestCatalogService({this.latency = const Duration(milliseconds: 250)});
 
   void _initQuests() {
     if (_isInitialized) return;
@@ -30,7 +30,6 @@ class MockQuestCatalogService implements QuestCatalogService {
         description: 'Утренняя зарядка для тонуса тела.',
         type: QuestType.physical,
         xp: 10,
-        createdBy: 'SYSTEM',
       ),
       Quest(
         id: 's-2',
@@ -38,7 +37,6 @@ class MockQuestCatalogService implements QuestCatalogService {
         description: 'Отвлечься и подышать свежим воздухом.',
         type: QuestType.physical,
         xp: 20,
-        createdBy: 'SYSTEM',
       ),
       Quest(
         id: 'p-1',
@@ -55,7 +53,6 @@ class MockQuestCatalogService implements QuestCatalogService {
         type: QuestType.cognitive,
         xp: 5,
         active: false,
-        createdBy: 'SYSTEM',
       ),
     ]);
     _isInitialized = true;

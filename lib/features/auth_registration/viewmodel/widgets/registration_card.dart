@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:heros_journey/features/auth_registration/viewmodel/widgets/registration_form.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
 import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_state.dart';
+import 'package:heros_journey/features/auth_registration/viewmodel/widgets/registration_form.dart';
 
 class RegistrationCard extends StatelessWidget {
   const RegistrationCard({super.key});

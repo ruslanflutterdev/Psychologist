@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
-import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/quest_catalog/models/quest_catalog_filter.dart';
 import 'package:heros_journey/features/quest_catalog/view/widgets/quest_form_dialog.dart';
 import 'package:heros_journey/features/quest_catalog/view_model/widgets/catalog_filter_row.dart';
 import 'package:heros_journey/features/quest_catalog/view_model/widgets/catalog_quests_list.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 class QuestsCatalogScreen extends StatefulWidget {
   const QuestsCatalogScreen({super.key});
@@ -18,8 +17,9 @@ class QuestsCatalogScreen extends StatefulWidget {
 
 class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
   QuestCatalogFilter _filter = QuestCatalogFilter.initial;
+
   String get _currentUserId =>
-      context.read<SessionCubit>().state?.token ?? 'MOCK_PSYCH_ID';
+      sb.Supabase.instance.client.auth.currentUser?.id ?? 'ANON';
 
   List<Quest> _quests = [];
   bool _isLoading = false;
@@ -39,7 +39,6 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
 
   Future<void> _loadQuests() async {
     setState(() => _isLoading = true);
-
     await _questsSubscription?.cancel();
 
     try {
@@ -47,18 +46,19 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
       if (mounted) {
         setState(() => _quests = loadedQuests);
       }
+
       _questsSubscription = ServiceRegistry.questCatalog
           .getQuests(filter: _filter)
           .listen((list) {
-            if (mounted) {
-              setState(() => _quests = list);
-            }
-          });
+        if (mounted) {
+          setState(() => _quests = list);
+        }
+      });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ошибка загрузки: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка загрузки: $e')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -74,9 +74,9 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка: $e')),
+        );
       }
     }
   }
@@ -151,10 +151,10 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
             onPressed: _isLoading ? null : _loadQuests,
             icon: _isLoading
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
                 : const Icon(Icons.refresh),
             tooltip: 'Обновить список квестов',
           ),

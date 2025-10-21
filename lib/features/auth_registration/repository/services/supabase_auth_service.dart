@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:heros_journey/core/errors/auth_exception.dart' as core;
 import 'package:heros_journey/core/models/user_session_model.dart';
 import 'package:heros_journey/features/auth_registration/repository/services/auth_service.dart';
-import 'package:heros_journey/features/psychologist_screen/model/psychologist_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 class SupabaseAuthService implements AuthService {
