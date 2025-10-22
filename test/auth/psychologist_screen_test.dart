@@ -42,7 +42,7 @@ void main() {
   // Регистрация fallback-значений для mocktail
   setUpAll(() {
     registerFallbackValue(
-      const UserSessionModel(token: 'token', role: 'psych', email: 'a@b.c'),
+      const UserSessionModel(token: 'token', role: 'psych', email: 'a@b.c', firstName: '', lastName: ''),
     );
   });
 
@@ -62,7 +62,7 @@ void main() {
     // Для успешной загрузки PsychologistScreen и Body:
     when(() => mockPsychologistService.getProfile()).thenAnswer(
       (_) => Future.value(
-        const PsychologistModel(firstName: 'Test', lastName: 'User'),
+        const PsychologistModel(firstName: 'Test', lastName: 'User', id: ''),
       ),
     );
     // ИСПРАВЛЕНО: Возвращаем Stream<List<ChildModel>>
@@ -82,7 +82,7 @@ void main() {
       const UserSessionModel(
         token: 'active',
         role: 'psych',
-        email: 'test@psych.com',
+        email: 'test@psych.com', firstName: '', lastName: '',
       ),
     );
     when(() => mockSessionCubit.clear()).thenAnswer((_) {});

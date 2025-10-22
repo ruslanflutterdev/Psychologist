@@ -25,6 +25,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
   late final TextEditingController _emailCtrl;
   late final TextEditingController _passCtrl;
   late final TextEditingController _confirmCtrl;
+  late final TextEditingController _firstNameCtrl;
+  late final TextEditingController _lastNameCtrl;
   bool _consentChecked = false;
 
   @override
@@ -33,6 +35,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
     _emailCtrl = TextEditingController();
     _passCtrl = TextEditingController();
     _confirmCtrl = TextEditingController();
+    _firstNameCtrl = TextEditingController();
+    _lastNameCtrl = TextEditingController();
   }
 
   @override
@@ -40,19 +44,33 @@ class _RegistrationFormState extends State<RegistrationForm> {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     _confirmCtrl.dispose();
+    _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<RegistrationBloc>().add(
-      RegistrationSubmitted(email: _emailCtrl.text, password: _passCtrl.text),
+      RegistrationSubmitted(
+        email: _emailCtrl.text,
+        password: _passCtrl.text,
+        firstName: _firstNameCtrl.text,
+        lastName: _lastNameCtrl.text,
+      ),
     );
   }
 
   bool get _canSubmit => _consentChecked && !widget.state.isLoading;
 
   void _openAgreement() => Navigator.of(context).pushNamed('/agreement');
+
+  String? _validateNamePart(String? v, String fieldName) {
+    final val = v?.trim() ?? '';
+    if (val.isEmpty) return 'Введите $fieldName';
+    if (val.length < 2) return 'Минимум 2 символа';
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +85,18 @@ class _RegistrationFormState extends State<RegistrationForm> {
         children: [
           Text('Регистрация (Психолог)', style: theme.textTheme.headlineSmall),
           const SizedBox(height: 16),
+          TextFormField(
+            controller: _firstNameCtrl,
+            decoration: const InputDecoration(labelText: 'Имя'),
+            validator: (v) => _validateNamePart(v, 'имя'),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _lastNameCtrl,
+            decoration: const InputDecoration(labelText: 'Фамилия'),
+            validator: (v) => _validateNamePart(v, 'фамилию'),
+          ),
+          const SizedBox(height: 12),
           RegistrationEmailField(controller: _emailCtrl),
           const SizedBox(height: 12),
           RegistrationPasswordField(controller: _passCtrl),
