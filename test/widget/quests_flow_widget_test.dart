@@ -142,7 +142,7 @@ class _ChildProfileHarnessState extends State<ChildProfileHarness> {
                             child: Image.network(
                               a.previewUrl!,
                               key: Tk.completedPhoto(a.id),
-                              errorBuilder: (_, _, _) =>
+                              errorBuilder: (context, error, stackTrace) =>
                               const SizedBox(width: 40, height: 40),
                             ),
                           ),
