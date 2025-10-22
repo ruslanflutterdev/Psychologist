@@ -6,11 +6,11 @@ import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/child_screen/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/repository/find_child_by_id.dart';
 import 'package:heros_journey/features/child_screen/repository/services/mock_child_quests_service.dart';
-import 'package:heros_journey/features/child_screen/view_model/widgets/assign_quest_dialog.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_error_text.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_info_card.dart';
-import 'package:heros_journey/features/child_screen/view_model/widgets/child_quests_section.dart';
 import 'package:heros_journey/features/child_screen/view_model/parents_widgets/parent_contact_card.dart';
+import 'package:heros_journey/features/child_screen/view_model/widgets/assign_quest_dialog.dart';
+import 'package:heros_journey/features/child_screen/view_model/widgets/child_quests_section.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
 
 class ChildScreen extends StatefulWidget {

@@ -1,9 +1,9 @@
 import 'package:heros_journey/core/services/agreement_service.dart';
 import 'package:heros_journey/core/services/mock_agreement_service.dart';
-import 'package:heros_journey/core/services/mock_quest_catalog_service.dart';
 import 'package:heros_journey/core/services/mock_quest_service.dart';
 import 'package:heros_journey/core/services/quest_catalog_service.dart';
 import 'package:heros_journey/core/services/quest_service.dart';
+import 'package:heros_journey/core/services/supabase_quest_catalog_service.dart';
 import 'package:heros_journey/features/auth_registration/repository/services/auth_service.dart';
 import 'package:heros_journey/features/auth_registration/repository/services/supabase_auth_service.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_progress_service.dart';
@@ -30,14 +30,13 @@ class ServiceRegistry {
   static late ParentContactService parentContact;
 
   static void initSupabase() {
-    final supabaseClient = sb.Supabase.instance.client;
-    auth = SupabaseAuthService(supabaseClient);
+    auth = SupabaseAuthService(sb.Supabase.instance.client);
     child = MockChildService();
     quest = MockQuestService();
     progress = MockProgressService();
-    psychologist = SupabasePsychologistService(supabaseClient);
+    psychologist = SupabasePsychologistService(sb.Supabase.instance.client);
     agreement = const MockAgreementService();
-    questCatalog = MockQuestCatalogService();
+    questCatalog = SupabaseQuestCatalogService(sb.Supabase.instance.client);
     childQuests = MockChildQuestsService();
     parentContact = MockParentContactService();
   }

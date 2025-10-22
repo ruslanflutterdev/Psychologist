@@ -25,13 +25,11 @@ class MockParentContactService implements ParentContactService {
   Future<void> saveContact(String childId, ParentContactModel contact) async {
     await Future<void>.delayed(latency);
     _contacts[childId] = contact;
-    print('MOCK: Saved contact for $childId: ${contact.fullName}');
   }
 
   @override
   Future<void> deleteContact(String childId) async {
     await Future<void>.delayed(latency);
     _contacts.remove(childId);
-    print('MOCK: Deleted contact for $childId');
   }
 }

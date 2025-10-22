@@ -118,7 +118,7 @@ class _QuestFormDialogState extends State<QuestFormDialog> {
                     labelText: 'Сфера',
                     errorText: validateQuestType(_selectedType),
                   ),
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   items: QuestType.values
                       .map(
                         (t) =>
