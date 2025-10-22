@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/models/quest_models.dart';
+import 'package:heros_journey/features/child_screen/view_model/widgets/assign_quest_dialog.dart';
 
 class QuestListTile extends StatelessWidget {
   final Quest quest;
@@ -19,6 +20,13 @@ class QuestListTile extends StatelessWidget {
 
   String _formatUpdatedAt(DateTime dt) {
     return '${dt.day}.${dt.month}.${dt.year} ${dt.hour}:${dt.minute}';
+  }
+
+  void _openAssignDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AssignQuestDialog(quest: quest),
+    );
   }
 
   @override
@@ -56,6 +64,10 @@ class QuestListTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            TextButton(
+              onPressed: () => _openAssignDialog(context),
+              child: const Text('НАЗНАЧИТЬ'),
+            ),
             Text(
               'Обновлено: ${_formatUpdatedAt(quest.updatedAt)}',
               style: theme.textTheme.bodySmall,

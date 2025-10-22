@@ -9,8 +9,8 @@ import 'package:heros_journey/features/child_screen/repository/services/mock_chi
 import 'package:heros_journey/features/child_screen/view/widgets/child_error_text.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_info_card.dart';
 import 'package:heros_journey/features/child_screen/view_model/parents_widgets/parent_contact_card.dart';
-import 'package:heros_journey/features/child_screen/view_model/widgets/assign_quest_dialog.dart';
 import 'package:heros_journey/features/child_screen/view_model/widgets/child_quests_section.dart';
+import 'package:heros_journey/features/child_screen/view_model/widgets/quest_picker_dialog.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
 
 class ChildScreen extends StatefulWidget {
@@ -80,7 +80,7 @@ class _ChildScreenState extends State<ChildScreen> {
       final quest = await showDialog<Quest>(
         context: context,
         builder: (_) =>
-            AssignQuestDialog(catalog: ServiceRegistry.questCatalog),
+        QuestPickerDialog(catalog: ServiceRegistry.questCatalog),
       );
       if (!mounted) return;
 
