@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
+import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/child_screen/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/repository/find_child_by_id.dart';
-import 'package:heros_journey/features/child_screen/view/widgets/assign_quest_dialog.dart';
+import 'package:heros_journey/features/child_screen/repository/services/mock_child_quests_service.dart';
+import 'package:heros_journey/features/child_screen/view_model/widgets/assign_quest_dialog.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_error_text.dart';
 import 'package:heros_journey/features/child_screen/view/widgets/child_info_card.dart';
-import 'package:heros_journey/features/child_screen/view/widgets/child_quests_section.dart';
+import 'package:heros_journey/features/child_screen/view_model/widgets/child_quests_section.dart';
+import 'package:heros_journey/features/child_screen/view_model/parents_widgets/parent_contact_card.dart';
 import 'package:heros_journey/features/progress_screen/view/progress_screen.dart';
-
 
 class ChildScreen extends StatefulWidget {
   final String childId;
@@ -42,8 +45,21 @@ class _ChildScreenState extends State<ChildScreen> {
       final c = await findChildById(widget.childId);
       if (!mounted) return;
       setState(() {
-        _child = c;
         _loadingChild = false;
+
+        if (c != null) {
+          _child = ChildModel(
+            id: c.id,
+            firstName: c.firstName,
+            lastName: c.lastName,
+            age: c.age,
+            gender: c.gender,
+            archetype: 'Герой',
+            updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
+          );
+        } else {
+          _child = null;
+        }
       });
     } catch (e) {
       if (!mounted) return;
@@ -56,6 +72,9 @@ class _ChildScreenState extends State<ChildScreen> {
   }
 
   Future<void> _assignQuestFlow() async {
+    final session = context.read<SessionCubit>().state;
+    final currentUserId = session?.token ?? 'MOCK_PSYCH_ID';
+
     setState(() => _isAssigning = true);
     try {
       final quest = await showDialog<Quest>(
@@ -64,21 +83,28 @@ class _ChildScreenState extends State<ChildScreen> {
             AssignQuestDialog(catalog: ServiceRegistry.questCatalog),
       );
       if (!mounted) return;
+
       if (quest != null) {
         await ServiceRegistry.childQuests.assignQuest(
           childId: widget.childId,
           quest: quest,
+          assignedBy: currentUserId,
         );
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Назначен квест: ${quest.title}')),
-        );
-        setState(
-          () {},
+          SnackBar(content: Text('Квест "${quest.title}" назначен ребёнку.')),
         );
       }
+    } on DuplicateQuestException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) {
+        setState(() => _error = 'Ошибка назначения квеста: ${e.toString()}');
+      }
     } finally {
       if (mounted) setState(() => _isAssigning = false);
     }
@@ -124,6 +150,10 @@ class _ChildScreenState extends State<ChildScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               ChildInfoCard(isLoading: _loadingChild, child: _child),
+              ParentContactCard(
+                childId: widget.childId,
+                service: ServiceRegistry.parentContact,
+              ),
               const SizedBox(height: 8),
               ChildErrorText(error: _error),
               const SizedBox(height: 8),
@@ -134,7 +164,7 @@ class _ChildScreenState extends State<ChildScreen> {
                   child: ChildQuestsSection(
                     childId: widget.childId,
                     service: ServiceRegistry.childQuests,
-                    onRefreshAfterChange: () => setState(() {}),
+                    onRefreshAfterChange: () {},
                   ),
                 ),
               ),

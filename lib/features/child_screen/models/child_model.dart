@@ -4,6 +4,8 @@ class ChildModel {
   final String lastName;
   final int age;
   final ChildGender gender;
+  final String? archetype;
+  final DateTime? updatedAt;
 
   const ChildModel({
     required this.id,
@@ -11,6 +13,8 @@ class ChildModel {
     required this.lastName,
     required this.age,
     required this.gender,
+    this.archetype,
+    this.updatedAt,
   });
 
   String get name => '$firstName $lastName';

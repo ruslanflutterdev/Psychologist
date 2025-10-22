@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/child_screen/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/view/screens/child_screen.dart';
@@ -8,12 +9,21 @@ import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/psy
 class PsychologistScreen extends StatelessWidget {
   const PsychologistScreen({super.key});
 
-  void _logout(BuildContext context) {
-    context.read<SessionCubit>().clear();
-    Navigator.of(
-      context,
-      rootNavigator: true,
-    ).pushNamedAndRemoveUntil('/login', (route) => false);
+  Future<void> _logout(BuildContext context) async {
+    await ServiceRegistry.auth.logout();
+
+    await ServiceRegistry.auth.clearAllLocalData();
+
+    if (context.mounted) {
+      context.read<SessionCubit>().clear();
+    }
+
+    if (context.mounted) {
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
   }
 
   void _openChild(BuildContext context, ChildModel child) {
@@ -22,6 +32,10 @@ class PsychologistScreen extends StatelessWidget {
         builder: (_) => ChildScreen(childId: child.id, childName: child.name),
       ),
     );
+  }
+
+  void _openQuestsCatalog(BuildContext context) {
+    Navigator.of(context).pushNamed('/quests_catalog');
   }
 
   @override
@@ -36,13 +50,16 @@ class PsychologistScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Панель психолога'),
           actions: [
+            IconButton(
+              onPressed: () => _openQuestsCatalog(context),
+              icon: const Icon(Icons.library_books),
+              tooltip: 'Каталог квестов',
+            ),
             TextButton.icon(
               onPressed: () => _logout(context),
               icon: const Icon(Icons.logout),
               label: const Text('Выйти'),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.black,
-              ),
+              style: TextButton.styleFrom(foregroundColor: Colors.black),
             ),
           ],
         ),

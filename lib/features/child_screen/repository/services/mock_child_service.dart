@@ -2,7 +2,7 @@ import 'package:heros_journey/features/child_screen/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_service.dart';
 
 class MockChildService implements ChildService {
-  final List<ChildModel> _children = const [
+  final List<ChildModel> _initialChildren = const [
     ChildModel(
       id: '1',
       firstName: 'Иван',
@@ -41,8 +41,21 @@ class MockChildService implements ChildService {
   ];
 
   @override
-  Future<List<ChildModel>> getChildren() async {
+  Stream<List<ChildModel>> getChildren() async* {
+    // 1. Симуляция начальной загрузки
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    return _children;
+    yield _initialChildren;
+    await Future<void>.delayed(const Duration(seconds: 3));
+    final updatedList = [
+      ..._initialChildren,
+      const ChildModel(
+        id: '6',
+        firstName: 'Новый',
+        lastName: 'Ребёнок',
+        age: 8,
+        gender: ChildGender.male,
+      ),
+    ];
+    yield updatedList;
   }
 }

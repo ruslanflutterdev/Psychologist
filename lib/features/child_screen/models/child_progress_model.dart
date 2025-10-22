@@ -18,4 +18,29 @@ class ChildProgressModel {
     required this.max,
     required this.updatedAt,
   });
+
+  double get totalLevel {
+    final sum = pq + eq + iq + soq + sq;
+    return (sum / (max * 5)) * 100;
+  }
+
+  ChildProgressModel copyWith({
+    int? pq,
+    int? eq,
+    int? iq,
+    int? soq,
+    int? sq,
+    DateTime? updatedAt,
+  }) {
+    return ChildProgressModel(
+      childId: childId,
+      pq: pq ?? this.pq,
+      eq: eq ?? this.eq,
+      iq: iq ?? this.iq,
+      soq: soq ?? this.soq,
+      sq: sq ?? this.sq,
+      max: max,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

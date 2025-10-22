@@ -5,8 +5,6 @@ import 'package:mocktail/mocktail.dart';
 import '../../test/mocks/mock_repos.dart';
 import '../fixtures/quest_fixtures.dart';
 
-
-
 class QuestsState {
   final List<Quest> available;
   final List<Quest> visible;
@@ -38,13 +36,27 @@ class QuestsState {
 }
 
 abstract class QuestsEvent {}
-class LoadQuests extends QuestsEvent { final String childId; LoadQuests(this.childId); }
-class ApplyFilter extends QuestsEvent { final String? type; ApplyFilter(this.type); }
-class AssignQuest extends QuestsEvent { final Quest quest; final String childId; AssignQuest(this.childId, this.quest); }
+
+class LoadQuests extends QuestsEvent {
+  final String childId;
+  LoadQuests(this.childId);
+}
+
+class ApplyFilter extends QuestsEvent {
+  final String? type;
+  ApplyFilter(this.type);
+}
+
+class AssignQuest extends QuestsEvent {
+  final Quest quest;
+  final String childId;
+  AssignQuest(this.childId, this.quest);
+}
 
 class QuestsBloc extends Bloc<QuestsEvent, QuestsState> {
   final QuestsRepository repo;
-  QuestsBloc(this.repo) : super(QuestsState(available: [], visible: [], assigned: [])) {
+  QuestsBloc(this.repo)
+    : super(QuestsState(available: [], visible: [], assigned: [])) {
     on<LoadQuests>(_onLoad);
     on<ApplyFilter>(_onFilter);
     on<AssignQuest>(_onAssign);
@@ -53,13 +65,16 @@ class QuestsBloc extends Bloc<QuestsEvent, QuestsState> {
     emit(state.copyWith(loading: true));
     final avail = await repo.getAvailableQuests();
     final assigned = await repo.getAssignedQuests(e.childId);
-    emit(state.copyWith(
-      loading: false,
-      available: avail,
-      visible: avail,
-      assigned: assigned,
-    ));
+    emit(
+      state.copyWith(
+        loading: false,
+        available: avail,
+        visible: avail,
+        assigned: assigned,
+      ),
+    );
   }
+
   void _onFilter(ApplyFilter e, Emitter<QuestsState> emit) {
     if (e.type == null) {
       emit(state.copyWith(visible: state.available));
@@ -68,6 +83,7 @@ class QuestsBloc extends Bloc<QuestsEvent, QuestsState> {
       emit(state.copyWith(visible: filtered, filterType: e.type));
     }
   }
+
   Future<void> _onAssign(AssignQuest e, Emitter<QuestsState> emit) async {
     final added = await repo.assignQuest(e.childId, e.quest);
     emit(state.copyWith(assigned: [...state.assigned, added]));
@@ -89,8 +105,12 @@ void main() {
   blocTest<QuestsBloc, QuestsState>(
     'loads available & assigned quests',
     build: () {
-      when(() => repo.getAvailableQuests()).thenAnswer((_) async => availableQuests);
-      when(() => repo.getAssignedQuests(childId)).thenAnswer((_) async => initiallyAssigned);
+      when(
+        () => repo.getAvailableQuests(),
+      ).thenAnswer((_) async => availableQuests);
+      when(
+        () => repo.getAssignedQuests(childId),
+      ).thenAnswer((_) async => initiallyAssigned);
       return QuestsBloc(repo);
     },
     act: (b) => b.add(LoadQuests(childId)),
@@ -107,8 +127,12 @@ void main() {
   blocTest<QuestsBloc, QuestsState>(
     'applies filter by type (strength)',
     build: () {
-      when(() => repo.getAvailableQuests()).thenAnswer((_) async => availableQuests);
-      when(() => repo.getAssignedQuests(childId)).thenAnswer((_) async => initiallyAssigned);
+      when(
+        () => repo.getAvailableQuests(),
+      ).thenAnswer((_) async => availableQuests);
+      when(
+        () => repo.getAssignedQuests(childId),
+      ).thenAnswer((_) async => initiallyAssigned);
       return QuestsBloc(repo);
     },
     act: (b) async {
@@ -128,10 +152,18 @@ void main() {
   blocTest<QuestsBloc, QuestsState>(
     'assigns quest adds to assigned list',
     build: () {
-      when(() => repo.getAvailableQuests()).thenAnswer((_) async => availableQuests);
-      when(() => repo.getAssignedQuests(childId)).thenAnswer((_) async => initiallyAssigned);
-      when(() => repo.assignQuest(childId, availableQuests.first)).thenAnswer((_) async =>
-          ChildQuest(id: 'a2', questId: availableQuests.first.id, title: availableQuests.first.title)
+      when(
+        () => repo.getAvailableQuests(),
+      ).thenAnswer((_) async => availableQuests);
+      when(
+        () => repo.getAssignedQuests(childId),
+      ).thenAnswer((_) async => initiallyAssigned);
+      when(() => repo.assignQuest(childId, availableQuests.first)).thenAnswer(
+        (_) async => ChildQuest(
+          id: 'a2',
+          questId: availableQuests.first.id,
+          title: availableQuests.first.title,
+        ),
       );
       return QuestsBloc(repo);
     },

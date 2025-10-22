@@ -9,7 +9,6 @@ import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.
 import 'package:heros_journey/features/auth_reset/view/screens/reset_screen.dart';
 import 'package:heros_journey/features/auth_reset/viewmodel/reset_bloc.dart';
 
-
 class PsychWebApp extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final bool startAtReset;
@@ -34,16 +33,16 @@ class PsychWebApp extends StatelessWidget {
 
         home: startAtReset
             ? BlocProvider(
-          create: (_) => ResetBloc(auth: ServiceRegistry.auth),
-          child: const ResetScreen(),
-        )
+                create: (_) => ResetBloc(auth: ServiceRegistry.auth),
+                child: const ResetScreen(),
+              )
             : BlocProvider(
-          create: (ctx) => LoginBloc(
-            auth: ServiceRegistry.auth,
-            sessionCubit: ctx.read<SessionCubit>(),
-          ),
-          child: const LoginScreen(),
-        ),
+                create: (ctx) => LoginBloc(
+                  auth: ServiceRegistry.auth,
+                  sessionCubit: ctx.read<SessionCubit>(),
+                ),
+                child: const LoginScreen(),
+              ),
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
     );

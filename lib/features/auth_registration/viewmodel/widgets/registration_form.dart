@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:heros_journey/features/auth_registration/validators/password_validators.dart';
 import 'package:heros_journey/features/auth_registration/view/widgets/consent_checkbox.dart';
 import 'package:heros_journey/features/auth_registration/view/widgets/consent_row.dart';
 import 'package:heros_journey/features/auth_registration/view/widgets/registration_back_button.dart';
@@ -78,8 +79,9 @@ class _RegistrationFormState extends State<RegistrationForm> {
               labelText: 'Подтверждение пароля',
             ),
             validator: (v) {
+              final securityError = validateSecurePassword(v);
+              if (securityError != null) return securityError;
               final val = v?.trim() ?? '';
-              if (val.isEmpty) return 'Повторите пароль';
               if (val != _passCtrl.text.trim()) return 'Пароли не совпадают';
               return null;
             },

@@ -11,6 +11,7 @@ import 'package:mocktail/mocktail.dart';
 
 // Mocks
 class MockAuthService extends Mock implements AuthService {}
+
 class MockSessionCubit extends Mock implements SessionCubit {}
 
 // Fakes
@@ -32,7 +33,11 @@ void main() {
   group('RegistrationBloc', () {
     const email = 'test@example.com';
     const password = 'password123';
-    const userSession = UserSessionModel(token: 'token', role: 'psych', email: email);
+    const userSession = UserSessionModel(
+      token: 'token',
+      role: 'psych',
+      email: email,
+    );
 
     blocTest<RegistrationBloc, RegistrationState>(
       'изначальное состояние корректно',
@@ -49,21 +54,31 @@ void main() {
     blocTest<RegistrationBloc, RegistrationState>(
       'при успешной регистрации emit: isLoading -> isSuccess',
       build: () {
-        when(() => mockAuthService.registerPsychologist(email: email, password: password))
-            .thenAnswer((_) async => userSession);
+        when(
+          () => mockAuthService.registerPsychologist(
+            email: email,
+            password: password,
+          ),
+        ).thenAnswer((_) async => userSession);
         when(() => mockSessionCubit.save(userSession)).thenReturn(null);
         return RegistrationBloc(
           auth: mockAuthService,
           sessionCubit: mockSessionCubit,
         );
       },
-      act: (bloc) => bloc.add(RegistrationSubmitted(email: email, password: password)),
+      act: (bloc) =>
+          bloc.add(RegistrationSubmitted(email: email, password: password)),
       expect: () => [
         isA<RegistrationState>().having((s) => s.isLoading, 'isLoading', true),
         isA<RegistrationState>().having((s) => s.isSuccess, 'isSuccess', true),
       ],
       verify: (_) {
-        verify(() => mockAuthService.registerPsychologist(email: email, password: password)).called(1);
+        verify(
+          () => mockAuthService.registerPsychologist(
+            email: email,
+            password: password,
+          ),
+        ).called(1);
         verify(() => mockSessionCubit.save(userSession)).called(1);
       },
     );
@@ -71,20 +86,34 @@ void main() {
     blocTest<RegistrationBloc, RegistrationState>(
       'при ошибке AuthException emit: isLoading -> errorMessage',
       build: () {
-        when(() => mockAuthService.registerPsychologist(email: email, password: password))
-            .thenThrow(AuthException('code', 'Test error message'));
+        when(
+          () => mockAuthService.registerPsychologist(
+            email: email,
+            password: password,
+          ),
+        ).thenThrow(AuthException('code', 'Test error message'));
         return RegistrationBloc(
           auth: mockAuthService,
           sessionCubit: mockSessionCubit,
         );
       },
-      act: (bloc) => bloc.add(RegistrationSubmitted(email: email, password: password)),
+      act: (bloc) =>
+          bloc.add(RegistrationSubmitted(email: email, password: password)),
       expect: () => [
         isA<RegistrationState>().having((s) => s.isLoading, 'isLoading', true),
-        isA<RegistrationState>().having((s) => s.errorMessage, 'errorMessage', 'Test error message'),
+        isA<RegistrationState>().having(
+          (s) => s.errorMessage,
+          'errorMessage',
+          'Test error message',
+        ),
       ],
       verify: (_) {
-        verify(() => mockAuthService.registerPsychologist(email: email, password: password)).called(1);
+        verify(
+          () => mockAuthService.registerPsychologist(
+            email: email,
+            password: password,
+          ),
+        ).called(1);
         verifyNever(() => mockSessionCubit.save(any()));
       },
     );
@@ -92,20 +121,34 @@ void main() {
     blocTest<RegistrationBloc, RegistrationState>(
       'при неизвестной ошибке emit: isLoading -> generic error message',
       build: () {
-        when(() => mockAuthService.registerPsychologist(email: email, password: password))
-            .thenThrow(Exception('Unknown'));
+        when(
+          () => mockAuthService.registerPsychologist(
+            email: email,
+            password: password,
+          ),
+        ).thenThrow(Exception('Unknown'));
         return RegistrationBloc(
           auth: mockAuthService,
           sessionCubit: mockSessionCubit,
         );
       },
-      act: (bloc) => bloc.add(RegistrationSubmitted(email: email, password: password)),
+      act: (bloc) =>
+          bloc.add(RegistrationSubmitted(email: email, password: password)),
       expect: () => [
         isA<RegistrationState>().having((s) => s.isLoading, 'isLoading', true),
-        isA<RegistrationState>().having((s) => s.errorMessage, 'errorMessage', 'Неизвестная ошибка. Повторите попытку.'),
+        isA<RegistrationState>().having(
+          (s) => s.errorMessage,
+          'errorMessage',
+          'Неизвестная ошибка. Повторите попытку.',
+        ),
       ],
       verify: (_) {
-        verify(() => mockAuthService.registerPsychologist(email: email, password: password)).called(1);
+        verify(
+          () => mockAuthService.registerPsychologist(
+            email: email,
+            password: password,
+          ),
+        ).called(1);
         verifyNever(() => mockSessionCubit.save(any()));
       },
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/features/child_screen/models/child_model.dart';
+import 'package:intl/intl.dart';
 
 class ChildInfoCard extends StatelessWidget {
   final bool isLoading;
@@ -35,18 +36,22 @@ class ChildInfoCard extends StatelessWidget {
       );
     }
 
-    Widget row(String label, String value) => Row(
+    Widget row(String label, String value, {TextStyle? style}) => Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: theme.textTheme.bodyMedium),
         Text(
           value,
-          style: theme.textTheme.bodyMedium!.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style:
+              style ??
+              theme.textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );
+
+    final formattedDate = child!.updatedAt != null
+        ? DateFormat('yyyy-MM-dd HH:mm').format(child!.updatedAt!)
+        : 'Нет данных';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -64,6 +69,15 @@ class ChildInfoCard extends StatelessWidget {
             row('Возраст ребёнка', '${child!.age}'),
             const SizedBox(height: 6),
             row('Пол ребёнка', child!.gender.uiLabel),
+            const SizedBox(height: 6),
+            row('Архетип', child!.archetype ?? 'Не определен'),
+
+            const Divider(height: 24),
+            row(
+              'Последнее обновление профиля',
+              formattedDate,
+              style: theme.textTheme.bodySmall,
+            ),
           ],
         ),
       ),
