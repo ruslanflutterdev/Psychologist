@@ -36,10 +36,10 @@ class _QuestTimeFilterDropdownState extends State<QuestTimeFilterDropdown> {
         widget.currentFilter.isActive) {
       final from =
           widget.currentFilter.dateFrom?.toIso8601String().substring(5, 10) ??
-          '?';
+              '?';
       final to =
           widget.currentFilter.dateTo?.toIso8601String().substring(5, 10) ??
-          '?';
+              '?';
       return 'С $from по $to';
     }
     return _selectedOption.uiLabel;

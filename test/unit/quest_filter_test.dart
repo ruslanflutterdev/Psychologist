@@ -185,9 +185,8 @@ void main() {
           final filter = testToFilter(TimeFilterOption.today, fixedNow);
 
           // Подписываемся и ждем обновления
-          final filteredCompletedFuture = mockService
-              .getCompleted(childId, filter: filter)
-              .first;
+          final filteredCompletedFuture =
+              mockService.getCompleted(childId, filter: filter).first;
           push();
 
           final filteredCompleted = await filteredCompletedFuture;
@@ -226,9 +225,8 @@ void main() {
         final filter = testToFilter(TimeFilterOption.week, fixedNow);
 
         // Подписываемся и ждем обновления
-        final filteredCompletedFuture = mockService
-            .getCompleted(childId, filter: filter)
-            .first;
+        final filteredCompletedFuture =
+            mockService.getCompleted(childId, filter: filter).first;
         push();
 
         final filteredCompleted = await filteredCompletedFuture;
@@ -264,12 +262,10 @@ void main() {
         final filter = QuestTimeFilter.inactive;
 
         // Подписываемся на оба Stream и ждем обновления
-        final filteredCompletedFuture = mockService
-            .getCompleted(childId, filter: filter)
-            .first;
-        final filteredAssignedFuture = mockService
-            .getAssigned(childId, filter: filter)
-            .first;
+        final filteredCompletedFuture =
+            mockService.getCompleted(childId, filter: filter).first;
+        final filteredAssignedFuture =
+            mockService.getAssigned(childId, filter: filter).first;
         push(); // Push один раз
 
         final filteredCompleted = await filteredCompletedFuture;

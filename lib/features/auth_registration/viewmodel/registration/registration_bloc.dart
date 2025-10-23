@@ -11,7 +11,7 @@ class RegistrationBloc extends Bloc<RegistrationEvent, RegistrationState> {
   final SessionCubit sessionCubit;
 
   RegistrationBloc({required this.auth, required this.sessionCubit})
-    : super(const RegistrationState()) {
+      : super(const RegistrationState()) {
     on<RegistrationSubmitted>(_onSubmit);
     on<RegistrationBackPressed>(_onBack);
   }

@@ -80,7 +80,7 @@ class _ChildScreenState extends State<ChildScreen> {
       final quest = await showDialog<Quest>(
         context: context,
         builder: (_) =>
-        QuestPickerDialog(catalog: ServiceRegistry.questCatalog),
+            QuestPickerDialog(catalog: ServiceRegistry.questCatalog),
       );
       if (!mounted) return;
 

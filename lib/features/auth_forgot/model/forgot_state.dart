@@ -13,11 +13,12 @@ class ForgotState {
     bool? isLoading,
     bool? isSuccess,
     String? errorMessage,
-  }) => ForgotState(
-    isLoading: isLoading ?? this.isLoading,
-    isSuccess: isSuccess ?? this.isSuccess,
-    errorMessage: errorMessage,
-  );
+  }) =>
+      ForgotState(
+        isLoading: isLoading ?? this.isLoading,
+        isSuccess: isSuccess ?? this.isSuccess,
+        errorMessage: errorMessage,
+      );
 
   static const initial = ForgotState();
 }

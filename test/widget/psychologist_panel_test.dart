@@ -19,7 +19,8 @@ class MockChildService extends Mock implements ChildService {}
 // --- TEST DATA ---
 final testProfile = const PsychologistModel(
   firstName: 'Тест',
-  lastName: 'Психолог', id: '',
+  lastName: 'Психолог',
+  id: '',
 );
 
 final initialChildren = [

@@ -45,65 +45,65 @@ class _QuestPickerDialogState extends State<QuestPickerDialog> {
         width: 520,
         child: _loading
             ? const SizedBox(
-          height: 120,
-          child: Center(child: CircularProgressIndicator()),
-        )
+                height: 120,
+                child: Center(child: CircularProgressIndicator()),
+              )
             : Column(
-          key: Tk.questPicker,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilterChip(
-                  key: Tk.filterChip('all'),
-                  label: const Text('Все'),
-                  selected: _filter == null,
-                  onSelected: (_) => setState(() => _filter = null),
-                ),
-                ...QuestType.values.map(
-                      (t) => FilterChip(
-                    key: Tk.filterChip(t.name),
-                    label: Text(t.uiLabel),
-                    selected: _filter == t,
-                    onSelected: (_) => setState(() => _filter = t),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (filtered.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.0),
-                child: Text('Квесты не найдены или не активны.'),
-              ),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: filtered.length,
-                itemBuilder: (_, i) {
-                  final q = filtered[i];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    child: ListTile(
-                      key: Tk.questTile(q.id),
-                      title: Text(q.title),
-                      subtitle: Text(q.type.uiLabel),
-                      trailing: TextButton(
-                        key: Tk.assignBtn(q.id),
-                        onPressed: () =>
-                            Navigator.of(context).pop<Quest>(q),
-                        child: const Text('Выбрать'),
+                key: Tk.questPicker,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilterChip(
+                        key: Tk.filterChip('all'),
+                        label: const Text('Все'),
+                        selected: _filter == null,
+                        onSelected: (_) => setState(() => _filter = null),
                       ),
-                      onTap: () => Navigator.of(context).pop<Quest>(q),
+                      ...QuestType.values.map(
+                        (t) => FilterChip(
+                          key: Tk.filterChip(t.name),
+                          label: Text(t.uiLabel),
+                          selected: _filter == t,
+                          onSelected: (_) => setState(() => _filter = t),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (filtered.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Text('Квесты не найдены или не активны.'),
                     ),
-                  );
-                },
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: filtered.length,
+                      itemBuilder: (_, i) {
+                        final q = filtered[i];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          child: ListTile(
+                            key: Tk.questTile(q.id),
+                            title: Text(q.title),
+                            subtitle: Text(q.type.uiLabel),
+                            trailing: TextButton(
+                              key: Tk.assignBtn(q.id),
+                              onPressed: () =>
+                                  Navigator.of(context).pop<Quest>(q),
+                              child: const Text('Выбрать'),
+                            ),
+                            onTap: () => Navigator.of(context).pop<Quest>(q),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
       actions: [
         TextButton(

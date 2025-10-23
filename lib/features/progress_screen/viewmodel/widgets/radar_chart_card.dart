@@ -8,12 +8,12 @@ class RadarChartCard extends StatelessWidget {
   const RadarChartCard({super.key, required this.data});
 
   List<double> _values() => [
-    data.pq.toDouble(),
-    data.eq.toDouble(),
-    data.iq.toDouble(),
-    data.soq.toDouble(),
-    data.sq.toDouble(),
-  ];
+        data.pq.toDouble(),
+        data.eq.toDouble(),
+        data.iq.toDouble(),
+        data.soq.toDouble(),
+        data.sq.toDouble(),
+      ];
 
   List<String> _titles() => const ['PQ', 'EQ', 'IQ', 'SoQ', 'SQ'];
 

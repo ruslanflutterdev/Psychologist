@@ -75,9 +75,9 @@ class AppRouter {
   }
 
   static Route<dynamic> _redirect(String path) => MaterialPageRoute(
-    builder: (_) => _Redirector(path: path),
-    settings: const RouteSettings(name: '/redirect'),
-  );
+        builder: (_) => _Redirector(path: path),
+        settings: const RouteSettings(name: '/redirect'),
+      );
 }
 
 class _Redirector extends StatelessWidget {
