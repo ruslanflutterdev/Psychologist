@@ -10,6 +10,7 @@ class SupabaseChildQuestsService implements ChildQuestsService {
 
   SupabaseChildQuestsService(this._supabase);
 
+
   // --- Реализация getAssigned/getCompleted (Временно заглушены) ---
   @override
   Stream<List<ChildQuest>> getAssigned(
