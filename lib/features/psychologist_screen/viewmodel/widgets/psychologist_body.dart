@@ -22,11 +22,12 @@ class PsychologistBody extends StatelessWidget {
     return FutureBuilder<PsychologistModel>(
       future: _loadProfile(),
       builder: (context, profileSnap) {
+        final PsychologistModel? profile = profileSnap.data;
+
         final header = switch (profileSnap.connectionState) {
-          ConnectionState.done =>
-            profileSnap.hasError
-                ? const SizedBox.shrink()
-                : PsychologistHeader(profile: profileSnap.data!),
+          ConnectionState.done => profileSnap.hasError || profile == null
+              ? const SizedBox.shrink()
+              : PsychologistHeader(psychologist: profile),
           _ => const PsychologistHeaderSkeleton(),
         };
 

@@ -9,52 +9,9 @@ class SupabaseAuthService implements AuthService {
 
   SupabaseAuthService(this._supabase);
 
-  Future<Map<String, dynamic>> _loadProfileData(String userId) async {
-    try {
-      final response = await _supabase
-          .from('psych_profiles')
-          .select('first_name, last_name')
-          .eq('user_id', userId)
-          .single();
-
-      final Map<String, dynamic> profileData = response;
-      return profileData;
-    } on sb.PostgrestException catch (e) {
-      if (e.code == '406' || e.message.toLowerCase().contains('no rows')) {
-        throw core.AuthException(
-          'PROFILE_MISSING',
-          'Профиль не найден. Пожалуйста, завершите регистрацию.',
-        );
-      }
-      rethrow;
-    }
-  }
-
-  Future<String> _loadRole(String userId) async {
-    try {
-      final roleResponse = await _supabase
-          .from('app_users')
-          .select('role')
-          .eq('user_id', userId)
-          .single();
-      final Map<String, dynamic> data = roleResponse;
-      return data['role'].toString();
-    } on sb.PostgrestException catch (e) {
-      if (e.code == '406' || e.message.toLowerCase().contains('no rows')) {
-        throw core.AuthException(
-          'ROLE_MISSING',
-          'Роль пользователя не определена.',
-        );
-      }
-      rethrow;
-    } catch (e) {
-      throw core.AuthException(
-        'ROLE_LOAD_FAILED',
-        'Ошибка при загрузке роли: ${e.toString()}',
-      );
-    }
-  }
-
+  /// Регистрация психолога.
+  /// Создаём пользователя, проставляем роль в `app_users`,
+  /// создаём/обновляем профиль в `psych_profiles` и возвращаем текущую сессию.
   @override
   Future<UserSessionModel> registerPsychologist({
     required String email,
@@ -64,37 +21,52 @@ class SupabaseAuthService implements AuthService {
   }) async {
     try {
       final redirectUrl = kIsWeb ? Uri.base.origin : null;
+
       final res = await _supabase.auth.signUp(
         email: email,
         password: password,
         emailRedirectTo: redirectUrl,
-        data: {'first_name': firstName, 'last_name': lastName},
+        data: {
+          'first_name': firstName,
+          'last_name': lastName,
+        },
       );
 
       final session = res.session ?? _supabase.auth.currentSession;
       final user = res.user ?? _supabase.auth.currentUser;
-      if (session == null || user == null) {
-        throw core.AuthException(
-          'EMAIL_CONFIRM_REQUIRED',
-          'Мы отправили ссылку на подтверждение. Подтвердите email, затем войдите.',
-        );
+
+      if (user == null) {
+        throw core.AuthException('NO_USER', 'Пользователь не создан.');
       }
+
       const role = 'psych';
 
-      await _supabase.from('app_users').upsert({
-        'user_id': user.id,
-        'role': role,
-      }, onConflict: 'user_id');
-      await _supabase.from('psych_profiles').upsert({
-        'user_id': user.id,
-        'first_name': firstName,
-        'last_name': lastName,
-      }, onConflict: 'user_id');
+      // Фиксируем роль пользователя
+      await _supabase.from('app_users').upsert(
+        {
+          'user_id': user.id,
+          'role': role,
+        },
+        onConflict: 'user_id',
+      );
 
+      await _supabase.from('psych_profiles').upsert(
+        {
+          'id': user.id,
+          'user_id': user.id,
+          'first_name': firstName,
+          'last_name': lastName,
+        },
+        onConflict: 'user_id',
+      );
+
+      // При включённом подтверждении email сессии может не быть прямо сейчас.
+      // Вернём что есть — токен может быть пустым до подтверждения.
+      final token = session?.accessToken ?? '';
       return UserSessionModel(
-        token: session.accessToken,
+        token: token,
         role: role,
-        email: user.email ?? email,
+        email: email,
         firstName: firstName,
         lastName: lastName,
       );
@@ -108,6 +80,8 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
+  /// Вход психолога по email+password.
+  /// Загружаем роль из `app_users` и профиль из `psych_profiles` (с фоллбэком на metadata).
   @override
   Future<UserSessionModel> loginPsychologist({
     required String email,
@@ -118,27 +92,28 @@ class SupabaseAuthService implements AuthService {
         email: email,
         password: password,
       );
+
       final session = res.session ?? _supabase.auth.currentSession;
       final user = res.user ?? _supabase.auth.currentUser;
 
       if (session == null || user == null) {
-        throw core.AuthException('NO_SESSION', 'Не удалось создать сессию.');
-      }
-      final String currentRole = await _loadRole(user.id);
-      final profileData = await _loadProfileData(user.id);
-      if (currentRole != 'psych') {
         throw core.AuthException(
-          'ROLE_MISMATCH',
-          'Доступ разрешен только для психологов.',
+          'NO_SESSION',
+          'Не удалось получить сессию или пользователя.',
         );
       }
 
+      // Роль берём из app_users
+      final currentRole = await _loadRole(user.id);
+
+      // Профиль берём из psych_profiles, при отсутствии — из user.userMetadata
+      final profileData = await _loadProfileData(user.id);
       return UserSessionModel(
         token: session.accessToken,
         role: currentRole,
         email: user.email ?? email,
-        firstName: profileData['first_name'] as String,
-        lastName: profileData['last_name'] as String,
+        firstName: profileData['first_name'] as String? ?? '',
+        lastName: profileData['last_name'] as String? ?? '',
       );
     } on sb.AuthException catch (e) {
       throw core.AuthException('SUPABASE', _pretty(e.message));
@@ -148,13 +123,15 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
+  /// Отправка письма для сброса пароля
   @override
   Future<void> requestPasswordReset({required String email}) async {
     try {
-      final redirect = kIsWeb
-          ? Uri.parse('${Uri.base.origin}/reset').toString()
-          : null;
-      await _supabase.auth.resetPasswordForEmail(email, redirectTo: redirect);
+      final redirectUrl = kIsWeb ? Uri.base.resolve('/reset').toString() : null;
+      await _supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: redirectUrl,
+      );
     } on sb.AuthException catch (e) {
       throw core.AuthException('SUPABASE', _pretty(e.message));
     } catch (e) {
@@ -165,86 +142,96 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
-  Future<void> _updatePasswordHandler(String newPassword) async {
-    await _supabase.auth.updateUser(sb.UserAttributes(password: newPassword));
-  }
-
-  Future<T?> _refresh<T>(Future<T> Function() handler) async {
-    try {
-      return await handler();
-    } on sb.AuthException catch (e) {
-      final m = e.message.toLowerCase();
-      if (m.contains('auth session missing') || m.contains('invalid jwt')) {
-        await _supabase.auth.refreshSession();
-        return await handler();
-      }
-      rethrow;
-    }
-  }
-
+  /// Применяет новый пароль непосредственно в "recovery"-сессии.
+  /// Соответствует методу интерфейса AuthService.applyNewPassword.
   @override
   Future<void> applyNewPassword({required String newPassword}) async {
     try {
-      await _refresh(() => _updatePasswordHandler(newPassword));
-    } on sb.AuthException catch (e, stackTrace) {
-      if (kDebugMode) {
-        print(e);
-        print(stackTrace);
-      }
-      final message = _pretty(e.message);
-      if (message ==
-          'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.') {
-        throw core.AuthException('TOKEN_EXPIRED', message);
-      }
-      throw core.AuthException('SUPABASE', message);
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        print(e);
-        print(stackTrace);
-      }
-      if (e is core.AuthException) rethrow;
+      await _supabase.auth.updateUser(sb.UserAttributes(password: newPassword));
+    } on sb.AuthException catch (e) {
+      throw core.AuthException('SUPABASE', _pretty(e.message));
+    } catch (e) {
       throw core.AuthException(
         'UNKNOWN',
-        'Неизвестная ошибка. Повторите попытку.',
+        'Ошибка смены пароля: ${e.toString()}',
       );
     }
   }
 
+  /// Выход
   @override
   Future<void> logout() async {
     try {
       await _supabase.auth.signOut();
     } on sb.AuthException catch (e) {
-      if (kDebugMode) {
-        debugPrint('Supabase signOut error: ${e.message}');
-      }
+      throw core.AuthException('SUPABASE', _pretty(e.message));
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Unexpected signOut error: $e');
-      }
+      throw core.AuthException('UNKNOWN', 'Ошибка выхода: ${e.toString()}');
     }
   }
 
+  /// Очистка локальных данных (если что-то кэшируете в приложении)
   @override
   Future<void> clearAllLocalData() async {
-    await Future<void>.value();
+    return;
   }
-}
 
-String _pretty(String raw) {
-  final m = raw.toLowerCase();
-  if (m.contains('already registered') || m.contains('user already exists')) {
-    return 'Email уже зарегистрирован';
+  /// Загрузка профиля: сначала из `psych_profiles`, если записи нет — из metadata.
+  Future<Map<String, dynamic>> _loadProfileData(String userId) async {
+    final resp = await _supabase
+        .from('psych_profiles')
+        .select('first_name, last_name')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    String? firstName;
+    String? lastName;
+
+    if (resp != null) {
+      firstName = (resp['first_name'] as String?)?.trim();
+      lastName = (resp['last_name'] as String?)?.trim();
+    }
+    final u = _supabase.auth.currentUser;
+    final meta = u?.userMetadata ?? const <String, dynamic>{};
+    firstName = (firstName ?? meta['first_name'] as String? ?? '').trim();
+    lastName = (lastName ?? meta['last_name'] as String? ?? '').trim();
+
+    return {'first_name': firstName, 'last_name': lastName};
   }
-  if (m.contains('invalid login') || m.contains('invalid credentials')) {
-    return 'Неверный email или пароль';
+
+  /// Роль берём из `app_users`
+  Future<String> _loadRole(String userId) async {
+    try {
+      final roleResponse = await _supabase
+          .from('app_users')
+          .select('role')
+          .eq('user_id', userId)
+          .single();
+      final Map<String, dynamic> data = roleResponse;
+      return data['role'].toString();
+    } on sb.PostgrestException catch (e) {
+      if (e.code == 'PGRST116') return 'psych';
+      rethrow;
+    }
   }
-  if (m.contains('email not confirmed')) {
-    return 'Подтвердите email через письмо и попробуйте снова';
+
+  /// Нормализация текстов ошибок Supabase
+  String _pretty(String raw) {
+    final m = raw.toLowerCase();
+    if (m.contains('email already registered') ||
+        m.contains('user already registered') ||
+        m.contains('already exists')) {
+      return 'Email уже зарегистрирован';
+    }
+    if (m.contains('invalid login') || m.contains('invalid credentials')) {
+      return 'Неверный email или пароль';
+    }
+    if (m.contains('email not confirmed')) {
+      return 'Подтвердите email через письмо и попробуйте снова';
+    }
+    if (m.contains('auth session missing') || m.contains('invalid refresh token')) {
+      return 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.';
+    }
+    return raw;
   }
-  if (m.contains('auth session missing') ||
-      m.contains('invalid refresh token')) {
-    return 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.';
-  }
-  return raw;
 }
