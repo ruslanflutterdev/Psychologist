@@ -6,6 +6,7 @@ import 'package:heros_journey/features/child_screen/models/child_model.dart';
 import 'package:heros_journey/features/child_screen/view/screens/child_screen.dart';
 import 'package:heros_journey/features/psychologist_screen/model/psychologist_model.dart';
 import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/psychologist_body.dart';
+import 'package:heros_journey/features/quest_catalog/view/screens/quests_catalog_screen.dart';
 
 class PsychologistScreen extends StatelessWidget {
   const PsychologistScreen({super.key});
@@ -14,7 +15,7 @@ class PsychologistScreen extends StatelessWidget {
     await ServiceRegistry.auth.logout();
     await ServiceRegistry.auth.clearAllLocalData();
     if (!context.mounted) return;
-      context.read<SessionCubit>().clear();
+    context.read<SessionCubit>().clear();
     if (context.mounted) {
       Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
     }
@@ -31,6 +32,14 @@ class PsychologistScreen extends StatelessWidget {
     );
   }
 
+  void _openQuestsCatalog(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<QuestsCatalogScreen>(
+        builder: (_) => const QuestsCatalogScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SessionCubit, dynamic>(
@@ -42,6 +51,11 @@ class PsychologistScreen extends StatelessWidget {
             scrolledUnderElevation: 0,
             elevation: 0.5,
             actions: [
+              IconButton(
+                tooltip: 'Создать квест',
+                icon: const Icon(Icons.add),
+                onPressed: () => _openQuestsCatalog(context),
+              ),
               TextButton.icon(
                 onPressed: () => _logout(context),
                 icon: const Icon(Icons.logout),
