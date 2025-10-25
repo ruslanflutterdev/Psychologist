@@ -228,11 +228,13 @@ class SupabaseChildQuestsService implements ChildQuestsService {
       default:
         if (s.startsWith('сил')) return QuestType.physical;
         if (s.startsWith('эмо')) return QuestType.emotional;
-        if (s.startsWith('интел') || s.startsWith('cogn'))
+        if (s.startsWith('интел') || s.startsWith('cogn')) {
           return QuestType.cognitive;
+        }
         if (s.startsWith('соц')) return QuestType.social;
-        if (s.startsWith('смы') || s.startsWith('spirit'))
+        if (s.startsWith('смы') || s.startsWith('spirit')) {
           return QuestType.spiritual;
+        }
         return QuestType.cognitive;
     }
   }

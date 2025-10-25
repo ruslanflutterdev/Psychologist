@@ -42,27 +42,30 @@ class RadarChartCard extends StatelessWidget {
     final titles = _titles();
     final values = _values();
 
-    return RadarChart(
-      RadarChartData(
-        radarBackgroundColor: Colors.transparent,
-        radarBorderData: const BorderSide(color: Colors.transparent),
-        tickCount: 4,
-        ticksTextStyle: TextStyle(color: cs.outline),
-        tickBorderData: BorderSide(color: cs.outline.withValues(alpha: .25)),
-        gridBorderData: BorderSide(color: cs.outline.withValues(alpha: .25)),
-        titleTextStyle: TextStyle(
-          color: cs.onSurface.withValues(alpha: .9),
-          fontWeight: FontWeight.w600,
+    return SizedBox(
+      height: 280,
+      child: RadarChart(
+        RadarChartData(
+          radarBackgroundColor: Colors.transparent,
+          radarBorderData: const BorderSide(color: Colors.transparent),
+          tickCount: 4,
+          ticksTextStyle: TextStyle(color: cs.outline),
+          tickBorderData: BorderSide(color: cs.outline.withValues(alpha: .25)),
+          gridBorderData: BorderSide(color: cs.outline.withValues(alpha: .25)),
+          titleTextStyle: TextStyle(
+            color: cs.onSurface.withValues(alpha: .9),
+            fontWeight: FontWeight.w600,
+          ),
+          getTitle: (index, angle) => RadarChartTitle(text: titles[index]),
+          radarShape: RadarShape.polygon,
+          dataSets: [
+            _currentDataSet(cs, values),
+            _maxDataSet(cs, values.length, data.max.toDouble()),
+          ],
+          radarTouchData: RadarTouchData(enabled: true),
         ),
-        getTitle: (index, angle) => RadarChartTitle(text: titles[index]),
-        radarShape: RadarShape.polygon,
-        dataSets: [
-          _currentDataSet(cs, values),
-          _maxDataSet(cs, values.length, data.max.toDouble()),
-        ],
-        radarTouchData: RadarTouchData(enabled: true),
+        duration: const Duration(milliseconds: 250),
       ),
-      duration: const Duration(milliseconds: 250),
     );
   }
 }
