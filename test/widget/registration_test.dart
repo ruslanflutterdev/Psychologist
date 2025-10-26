@@ -60,7 +60,6 @@ void main() {
             BlocProvider<SessionCubit>(create: (context) => mockSessionCubit),
           ],
           child: MaterialApp(
-            // ИСПРАВЛЕНО: Убран SingleChildScrollView
             home: const RegistrationScreen(),
             onGenerateRoute: (settings) {
               if (settings.name == '/psychologist_screen') {
@@ -87,6 +86,9 @@ void main() {
       await tester.tap(consentCheckbox);
       await tester.pump();
 
+      // [!code addition] Добавлены константы для новых полей
+      const validFirstName = 'TestName';
+      const validLastName = 'TestLastName';
       const validEmail = 'test@example.com';
       const validPassword = 'CorrectPassword1!';
 
@@ -96,19 +98,27 @@ void main() {
         isTrue,
       );
 
-      // Заполняем поля
+      // Заполняем поля (Учтены новые поля: 0-Имя, 1-Фамилия, 2-Email, 3-Пароль, 4-Подтверждение)
       await tester.enterText(
         find.byType(TextFormField).at(0),
-        validEmail,
-      ); // Email
+        validFirstName, // [!code change] Имя (index 0)
+      );
       await tester.enterText(
         find.byType(TextFormField).at(1),
-        validPassword,
-      ); // Пароль
+        validLastName, // [!code change] Фамилия (index 1)
+      );
       await tester.enterText(
         find.byType(TextFormField).at(2),
-        validPassword,
-      ); // Подтверждение
+        validEmail, // [!code change] Email (index 2)
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(3),
+        validPassword, // [!code change] Пароль (index 3)
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(4),
+        validPassword, // [!code change] Подтверждение (index 4)
+      );
       await tester.pump();
 
       // Кнопка остается активной
@@ -122,19 +132,21 @@ void main() {
         () => mockAuth.registerPsychologist(
           email: any(named: 'email'),
           password: any(named: 'password'),
-          firstName: '',
-          lastName: '',
+          firstName: validFirstName, // [!code change] Ожидаем Имя
+          lastName: validLastName, // [!code change] Ожидаем Фамилию
         ),
       ).thenAnswer(
         (_) async => const UserSessionModel(
           token: 'token',
           role: 'psych',
           email: validEmail,
-          firstName: '',
-          lastName: '',
+          firstName: validFirstName, // [!code change]
+          lastName: validLastName, // [!code change]
         ),
       );
 
+      // [!code addition] Прокрутка, чтобы кнопка submit была в зоне видимости
+      await tester.ensureVisible(submitButton);
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -142,8 +154,8 @@ void main() {
         () => mockAuth.registerPsychologist(
           email: validEmail,
           password: validPassword,
-          firstName: '',
-          lastName: '',
+          firstName: validFirstName, // [!code change] Проверяем Имя
+          lastName: validLastName, // [!code change] Проверяем Фамилию
         ),
       ).called(1);
     },
