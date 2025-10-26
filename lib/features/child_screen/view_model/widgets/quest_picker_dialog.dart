@@ -3,16 +3,16 @@ import 'package:heros_journey/core/models/quest_models.dart';
 import 'package:heros_journey/core/services/quest_catalog_service.dart';
 import 'package:heros_journey/core/testing/test_keys.dart';
 
-class AssignQuestDialog extends StatefulWidget {
+class QuestPickerDialog extends StatefulWidget {
   final QuestCatalogService catalog;
 
-  const AssignQuestDialog({super.key, required this.catalog});
+  const QuestPickerDialog({super.key, required this.catalog});
 
   @override
-  State<AssignQuestDialog> createState() => _AssignQuestDialogState();
+  State<QuestPickerDialog> createState() => _QuestPickerDialogState();
 }
 
-class _AssignQuestDialogState extends State<AssignQuestDialog> {
+class _QuestPickerDialogState extends State<QuestPickerDialog> {
   QuestType? _filter;
   List<Quest> _all = const [];
   bool _loading = true;
@@ -34,12 +34,13 @@ class _AssignQuestDialogState extends State<AssignQuestDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // В каталоге для выбора показываем только активные квесты
     final filtered = _filter == null
-        ? _all
-        : _all.where((q) => q.type == _filter).toList();
+        ? _all.where((q) => q.active).toList()
+        : _all.where((q) => q.type == _filter && q.active).toList();
 
     return AlertDialog(
-      title: const Text('+ Добавить квест'),
+      title: const Text('+ Выбрать квест'),
       content: SizedBox(
         width: 520,
         child: _loading
@@ -72,7 +73,11 @@ class _AssignQuestDialogState extends State<AssignQuestDialog> {
                     ],
                   ),
                   const SizedBox(height: 12),
-
+                  if (filtered.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Text('Квесты не найдены или не активны.'),
+                    ),
                   Flexible(
                     child: ListView.builder(
                       shrinkWrap: true,
@@ -89,7 +94,7 @@ class _AssignQuestDialogState extends State<AssignQuestDialog> {
                               key: Tk.assignBtn(q.id),
                               onPressed: () =>
                                   Navigator.of(context).pop<Quest>(q),
-                              child: const Text('Назначить'),
+                              child: const Text('Выбрать'),
                             ),
                             onTap: () => Navigator.of(context).pop<Quest>(q),
                           ),

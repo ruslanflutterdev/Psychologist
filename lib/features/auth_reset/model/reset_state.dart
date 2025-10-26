@@ -13,10 +13,11 @@ class ResetState {
     bool? isLoading,
     bool? isSuccess,
     String? errorMessage,
-  }) => ResetState(
-    isLoading: isLoading ?? this.isLoading,
-    isSuccess: isSuccess ?? this.isSuccess,
-    errorMessage: errorMessage,
-  );
+  }) =>
+      ResetState(
+        isLoading: isLoading ?? this.isLoading,
+        isSuccess: isSuccess ?? this.isSuccess,
+        errorMessage: errorMessage,
+      );
   static const initial = ResetState();
 }

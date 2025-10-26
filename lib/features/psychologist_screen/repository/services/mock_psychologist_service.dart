@@ -13,6 +13,10 @@ class MockPsychologistService implements PsychologistService {
       throw Exception('NETWORK: Сеть недоступна');
     }
 
-    return const PsychologistModel(firstName: 'Руслан', lastName: 'Тютюнников');
+    return const PsychologistModel(
+      id: 'mock-psychologist-id',
+      firstName: 'Руслан',
+      lastName: 'Тютюнников',
+    );
   }
 }

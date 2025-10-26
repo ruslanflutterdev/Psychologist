@@ -10,7 +10,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final SessionCubit sessionCubit;
 
   LoginBloc({required this.auth, required this.sessionCubit})
-    : super(LoginState.initial) {
+      : super(LoginState.initial) {
     on<LoginSubmitted>(_onSubmit);
     on<LoginGoRegister>((event, emit) {
       /* handled in View */

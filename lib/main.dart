@@ -24,4 +24,3 @@ Future<void> main() async {
 
   runApp(PsychWebApp(navigatorKey: navigatorKey, startAtReset: startAtReset));
 }
-

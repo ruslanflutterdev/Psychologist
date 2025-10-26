@@ -4,7 +4,6 @@ import 'package:heros_journey/features/auth_registration/repository/services/aut
 import 'package:heros_journey/features/auth_reset/model/reset_state.dart';
 import 'package:heros_journey/features/auth_reset/viewmodel/reset_event.dart';
 
-
 class ResetBloc extends Bloc<ResetEvent, ResetState> {
   final AuthService auth;
 

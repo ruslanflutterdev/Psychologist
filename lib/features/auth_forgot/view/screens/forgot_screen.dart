@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:heros_journey/features/auth_forgot/view/widgets/forgot_card.dart';
+import 'package:heros_journey/features/auth_forgot/viewmodel/widgets/forgot_card.dart';
 
 class ForgotScreen extends StatelessWidget {
   const ForgotScreen({super.key});

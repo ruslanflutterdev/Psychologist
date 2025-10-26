@@ -1,3 +1,5 @@
+// 11/lib/features/progress_screen/view/progress_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/features/child_screen/models/child_progress_model.dart';
@@ -14,7 +16,7 @@ class ProgressScreen extends StatelessWidget {
     required this.childName,
   });
 
-  Future<ChildProgressModel> _load() =>
+  Stream<ChildProgressModel?> _streamProgress() =>
       ServiceRegistry.progress.getChildProgress(childId);
 
   @override
@@ -28,13 +30,15 @@ class ProgressScreen extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 960),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: FutureBuilder<ChildProgressModel>(
-              future: _load(),
+            child: StreamBuilder<ChildProgressModel?>(
+              stream: _streamProgress(),
               builder: (context, snap) {
-                if (snap.connectionState != ConnectionState.done) {
+                if (snap.connectionState == ConnectionState.waiting &&
+                    !snap.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (snap.hasError) {
+
+                if (snap.hasError && !snap.hasData) {
                   return Center(
                     child: Text(
                       'Ошибка загрузки: ${snap.error}',
@@ -45,7 +49,17 @@ class ProgressScreen extends StatelessWidget {
                   );
                 }
 
-                final data = snap.data!;
+                final data = snap.data;
+
+                if (data == null) {
+                  return const Center(
+                    child: Text(
+                      'Прогресс ещё не рассчитан',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  );
+                }
+
                 return Card(
                   elevation: 2,
                   child: Padding(

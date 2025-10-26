@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:heros_journey/features/auth_registration/validators/password_validators.dart';
 
 class RegistrationPasswordField extends StatelessWidget {
   final TextEditingController controller;
@@ -10,12 +11,7 @@ class RegistrationPasswordField extends StatelessWidget {
       controller: controller,
       obscureText: true,
       decoration: const InputDecoration(labelText: 'Пароль'),
-      validator: (v) {
-        final val = v?.trim() ?? '';
-        if (val.isEmpty) return 'Введите пароль';
-        if (val.length < 6) return 'Минимум 6 символов';
-        return null;
-      },
+      validator: validateSecurePassword,
     );
   }
 }

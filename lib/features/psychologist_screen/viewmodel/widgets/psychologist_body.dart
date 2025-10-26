@@ -6,7 +6,6 @@ import 'package:heros_journey/features/psychologist_screen/view/widgets/children
 import 'package:heros_journey/features/psychologist_screen/view/widgets/psychologist_header_skeleton.dart';
 import 'package:heros_journey/features/psychologist_screen/viewmodel/widgets/psychologist_header.dart';
 
-
 class PsychologistBody extends StatelessWidget {
   final void Function(ChildModel child) onOpenChild;
 
@@ -15,7 +14,7 @@ class PsychologistBody extends StatelessWidget {
   Future<PsychologistModel> _loadProfile() =>
       ServiceRegistry.psychologist.getProfile();
 
-  Future<List<ChildModel>> _loadChildren() =>
+  Stream<List<ChildModel>> _streamChildren() =>
       ServiceRegistry.child.getChildren();
 
   @override
@@ -23,11 +22,12 @@ class PsychologistBody extends StatelessWidget {
     return FutureBuilder<PsychologistModel>(
       future: _loadProfile(),
       builder: (context, profileSnap) {
+        final PsychologistModel? profile = profileSnap.data;
+
         final header = switch (profileSnap.connectionState) {
-          ConnectionState.done =>
-            profileSnap.hasError
-                ? const SizedBox.shrink()
-                : PsychologistHeader(profile: profileSnap.data!),
+          ConnectionState.done => profileSnap.hasError || profile == null
+              ? const SizedBox.shrink()
+              : PsychologistHeader(psychologist: profile),
           _ => const PsychologistHeaderSkeleton(),
         };
 
@@ -35,12 +35,14 @@ class PsychologistBody extends StatelessWidget {
           children: [
             header,
             Expanded(
-              child: FutureBuilder<List<ChildModel>>(
-                future: _loadChildren(),
+              child: StreamBuilder<List<ChildModel>>(
+                stream: _streamChildren(),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      snapshot.data == null) {
                     return const Center(child: CircularProgressIndicator());
                   }
+
                   if (snapshot.hasError) {
                     return Center(
                       child: Text('Ошибка загрузки: ${snapshot.error}'),

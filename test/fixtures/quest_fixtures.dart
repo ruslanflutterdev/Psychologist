@@ -55,14 +55,14 @@ class ChildQuest extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    questId,
-    title,
-    completed,
-    comment,
-    previewUrl,
-    completedAt,
-  ];
+        id,
+        questId,
+        title,
+        completed,
+        comment,
+        previewUrl,
+        completedAt,
+      ];
 }
 
 const childId = 'child-1';

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:heros_journey/features/auth_registration/view/widgets/registration_form.dart';
-import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_bloc.dart';
-import 'package:heros_journey/features/auth_registration/viewmodel/registration/registration_state.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/services/login_event.dart';
+import 'package:heros_journey/features/auth_login/viewmodel/widgets/login_form.dart';
 
-class RegistrationCard extends StatelessWidget {
-  const RegistrationCard({super.key});
+class LoginCard extends StatelessWidget {
+  const LoginCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class RegistrationCard extends StatelessWidget {
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: BlocConsumer<RegistrationBloc, RegistrationState>(
+        child: BlocConsumer<LoginBloc, LoginState>(
           listenWhen: (p, c) => p.isSuccess != c.isSuccess,
           listener: (context, state) {
             if (state.isSuccess) {
@@ -23,7 +23,7 @@ class RegistrationCard extends StatelessWidget {
               ).pushReplacementNamed('/psychologist_screen');
             }
           },
-          builder: (context, state) => RegistrationForm(state: state),
+          builder: (context, state) => LoginForm(state: state),
         ),
       ),
     );

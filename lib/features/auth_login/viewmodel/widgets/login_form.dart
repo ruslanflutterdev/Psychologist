@@ -35,8 +35,8 @@ class _LoginFormState extends State<LoginForm> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<LoginBloc>().add(
-      LoginSubmitted(email: _emailCtrl.text, password: _passCtrl.text),
-    );
+          LoginSubmitted(email: _emailCtrl.text, password: _passCtrl.text),
+        );
   }
 
   void _goRegister() {

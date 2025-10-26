@@ -12,6 +12,7 @@ import 'package:heros_journey/features/auth_registration/viewmodel/registration/
 import 'package:heros_journey/features/auth_reset/view/screens/reset_screen.dart';
 import 'package:heros_journey/features/auth_reset/viewmodel/reset_bloc.dart';
 import 'package:heros_journey/features/psychologist_screen/view/screens/psychologist_screen.dart';
+import 'package:heros_journey/features/quest_catalog/view/screens/quests_catalog_screen.dart';
 
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -63,15 +64,20 @@ class AppRouter {
             child: const ResetScreen(),
           ),
         );
+      case '/quests_catalog':
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const QuestsCatalogScreen(),
+        );
       default:
         return _redirect('/login');
     }
   }
 
   static Route<dynamic> _redirect(String path) => MaterialPageRoute(
-    builder: (_) => _Redirector(path: path),
-    settings: const RouteSettings(name: '/redirect'),
-  );
+        builder: (_) => _Redirector(path: path),
+        settings: const RouteSettings(name: '/redirect'),
+      );
 }
 
 class _Redirector extends StatelessWidget {

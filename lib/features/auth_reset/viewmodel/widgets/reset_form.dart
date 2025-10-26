@@ -27,8 +27,8 @@ class _ResetFormState extends State<ResetForm> {
   void _submit(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
     context.read<ResetBloc>().add(
-      ResetSubmitted(password: _passCtrl.text, confirm: _confirmCtrl.text),
-    );
+          ResetSubmitted(password: _passCtrl.text, confirm: _confirmCtrl.text),
+        );
   }
 
   @override
@@ -87,7 +87,7 @@ class _ResetFormState extends State<ResetForm> {
                 onPressed: state.isLoading
                     ? null
                     : () =>
-                          Navigator.of(context).pushReplacementNamed('/login'),
+                        Navigator.of(context).pushReplacementNamed('/login'),
                 child: const Text('Вернуться ко входу'),
               ),
             ],

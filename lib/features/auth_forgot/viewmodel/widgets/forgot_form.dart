@@ -53,7 +53,6 @@ class _ForgotFormState extends State<ForgotForm> {
         children: [
           Text('Восстановление пароля', style: theme.textTheme.headlineSmall),
           const SizedBox(height: 16),
-
           TextFormField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
@@ -66,9 +65,7 @@ class _ForgotFormState extends State<ForgotForm> {
               return null;
             },
           ),
-
           const SizedBox(height: 16),
-
           if (state.errorMessage != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -79,7 +76,6 @@ class _ForgotFormState extends State<ForgotForm> {
                 ),
               ),
             ),
-
           FilledButton(
             onPressed: state.isLoading ? null : _submit,
             child: state.isLoading
@@ -91,7 +87,6 @@ class _ForgotFormState extends State<ForgotForm> {
                 : const Text('Отправить ссылку для сброса'),
           ),
           const SizedBox(height: 8),
-
           TextButton.icon(
             onPressed: state.isLoading ? null : _goBack,
             icon: const Icon(Icons.arrow_back),

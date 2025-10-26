@@ -23,10 +23,11 @@ class LoginState {
     bool? isLoading,
     bool? isSuccess,
     String? errorMessage,
-  }) => LoginState(
-    isLoading: isLoading ?? this.isLoading,
-    isSuccess: isSuccess ?? this.isSuccess,
-    errorMessage: errorMessage,
-  );
+  }) =>
+      LoginState(
+        isLoading: isLoading ?? this.isLoading,
+        isSuccess: isSuccess ?? this.isSuccess,
+        errorMessage: errorMessage,
+      );
   static const initial = LoginState();
 }

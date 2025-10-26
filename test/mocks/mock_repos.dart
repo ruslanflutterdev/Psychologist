@@ -10,4 +10,5 @@ abstract class QuestsRepository {
 class MockQuestsRepository extends Mock implements QuestsRepository {}
 
 class FakeQuest extends Fake implements Quest {}
+
 class FakeChildQuest extends Fake implements ChildQuest {}

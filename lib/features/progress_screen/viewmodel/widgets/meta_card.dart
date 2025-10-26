@@ -38,7 +38,7 @@ class MetaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final updated = _formatUpdatedAt(data.updatedAt);
-
+    final totalLevel = data.totalLevel.round();
     return Card(
       margin: const EdgeInsets.only(bottom: 16, top: 8),
       child: Padding(
@@ -86,8 +86,13 @@ class MetaCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Max', style: theme.textTheme.bodyMedium),
-                Text('${data.max}', style: theme.textTheme.bodyMedium),
+                Text('Общий уровень', style: theme.textTheme.titleMedium),
+                Text(
+                  '$totalLevel %',
+                  style: theme.textTheme.titleMedium!.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),

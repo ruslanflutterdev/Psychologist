@@ -14,9 +14,8 @@ class CompletedQuestTile extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final fmt = DateFormat('yyyy-MM-dd HH:mm');
-    final dateStr = item.completedAt != null
-        ? fmt.format(item.completedAt!)
-        : '';
+    final dateStr =
+        item.completedAt != null ? fmt.format(item.completedAt!) : '';
 
     Widget? thumb() {
       if (item.photoUrl == null || item.photoUrl!.isEmpty) return null;
@@ -73,7 +72,6 @@ class CompletedQuestTile extends StatelessWidget {
                       key: Tk.completedComment(item.id),
                       style: theme.textTheme.bodyMedium,
                     ),
-
                   const SizedBox(height: 8),
                   if (dateStr.isNotEmpty)
                     Text(
