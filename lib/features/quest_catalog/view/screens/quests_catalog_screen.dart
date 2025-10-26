@@ -151,10 +151,10 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
             onPressed: _isLoading ? null : _loadQuests,
             icon: _isLoading
                 ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.refresh),
             tooltip: 'Обновить список квестов',
           ),

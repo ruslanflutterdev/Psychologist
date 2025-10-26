@@ -37,17 +37,17 @@ class ChildInfoCard extends StatelessWidget {
     }
 
     Widget row(String label, String value, {TextStyle? style}) => Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: theme.textTheme.bodyMedium),
-        Text(
-          value,
-          style:
-              style ??
-              theme.textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ],
-    );
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: theme.textTheme.bodyMedium),
+            Text(
+              value,
+              style: style ??
+                  theme.textTheme.bodyMedium!
+                      .copyWith(fontWeight: FontWeight.w600),
+            ),
+          ],
+        );
 
     final formattedDate = child!.updatedAt != null
         ? DateFormat('yyyy-MM-dd HH:mm').format(child!.updatedAt!)
@@ -71,7 +71,6 @@ class ChildInfoCard extends StatelessWidget {
             row('Пол ребёнка', child!.gender.uiLabel),
             const SizedBox(height: 6),
             row('Архетип', child!.archetype ?? 'Не определен'),
-
             const Divider(height: 24),
             row(
               'Последнее обновление профиля',

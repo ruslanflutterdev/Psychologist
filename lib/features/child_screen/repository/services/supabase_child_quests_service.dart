@@ -16,13 +16,7 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     String childId, {
     QuestTimeFilter? filter,
   }) {
-    return Stream.fromFuture(_fetchQuests(
-      childId: childId,
-      statuses: const ['assigned', 'in_progress'],
-      includeCompletedFields: false,
-      orderBy: 'created_at',
-      ascending: false,
-    ));
+    return Stream.fromFuture(_fetchAssigned(childId: childId));
   }
 
   @override
@@ -30,109 +24,8 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     String childId, {
     QuestTimeFilter? filter,
   }) {
-    return Stream.fromFuture(_fetchQuests(
-      childId: childId,
-      statuses: const ['completed', 'verified'],
-      includeCompletedFields: true,
-      orderBy: 'completed_at',
-      ascending: false,
-    ));
+    return Stream.fromFuture(_fetchCompleted(childId: childId));
   }
-
-  Future<List<ChildQuest>> _fetchQuests({
-    required String childId,
-    required List<String> statuses,
-    required bool includeCompletedFields,
-    required String orderBy,
-    required bool ascending,
-  }) async {
-    final select = includeCompletedFields
-        ? "id, child_id, quest_id, status, child_comment, photo_url, completed_at, quests(id, title, sphere, xp)"
-        : "id, child_id, quest_id, status, quests(id, title, sphere, xp)";
-
-    final rows = await _supabase
-        .from('child_quests')
-        .select(select)
-        .eq('child_id', childId)
-        .inFilter('status', statuses)
-        .order(orderBy, ascending: ascending);
-
-    final list = (rows as List).cast<Map<String, dynamic>>();
-
-    return list.map((row) {
-      final q = (row['quests'] as Map<String, dynamic>? ?? const {});
-      final sphere = (q['sphere'] as String? ?? '').toLowerCase().trim();
-      final quest = Quest(
-        id: (q['id'] ?? row['quest_id'] ?? row['id']).toString(),
-        title: (q['title'] as String? ?? '').trim(),
-        type: _mapSphereToType(sphere),
-        createdBy: '',
-        updatedAt: DateTime.now(),
-        xp: q['xp'] as int?,
-      );
-
-      final status = _mapStatus((row['status'] as String? ?? '').toLowerCase());
-      DateTime? completedAt;
-      if (includeCompletedFields && row['completed_at'] != null) {
-        completedAt = DateTime.tryParse(row['completed_at'].toString());
-      }
-
-      return ChildQuest(
-        id: row['id'].toString(),
-        childId: row['child_id'].toString(),
-        quest: quest,
-        status: status,
-        childComment: includeCompletedFields ? (row['child_comment'] as String?) : null,
-        photoUrl: includeCompletedFields ? (row['photo_url'] as String?) : null,
-        completedAt: completedAt,
-      );
-    }).toList();
-  }
-
-
-  ChildQuestStatus _mapStatus(String s) {
-    switch (s) {
-      case 'assigned':
-      case 'in_progress':
-        return ChildQuestStatus.assigned;
-      case 'completed':
-      case 'verified':
-        return ChildQuestStatus.completed;
-      default:
-        return ChildQuestStatus.assigned;
-    }
-  }
-
-  QuestType _mapSphereToType(String s) {
-    switch (s) {
-      case 'physical':
-        return QuestType.physical;
-      case 'emotional':
-        return QuestType.emotional;
-      case 'cognitive':
-        return QuestType.cognitive;
-      case 'social':
-        return QuestType.social;
-      case 'spiritual':
-        return QuestType.spiritual;
-      default:
-        if (s.startsWith('сил')) return QuestType.physical;
-        if (s.startsWith('эмо')) return QuestType.emotional;
-        if (s.startsWith('интел') || s.startsWith('cogn')) {
-          return QuestType.cognitive;
-        }
-        if (s.startsWith('соц')) return QuestType.social;
-        if (s.startsWith('смы') || s.startsWith('spirit')) {
-          return QuestType.spiritual;
-        }
-        return QuestType.cognitive;
-    }
-  }
-
-  final _uuidRe = RegExp(
-      r'^[0-9a-fA-F]{8}\-?[0-9a-fA-F]{4}\-?[1-5][0-9a-fA-F]{3}\-?[89abAB][0-9a-fA-F]{3}\-?[0-9a-fA-F]{12}$');
-
-  bool _isUuid(String? s) => s != null && _uuidRe.hasMatch(s);
 
   @override
   Future<void> assignQuest({
@@ -154,10 +47,10 @@ class SupabaseChildQuestsService implements ChildQuestsService {
 
       final existing = await _supabase
           .from('child_quests')
-          .select('id')
+          .select('id, status')
           .eq('child_id', childId)
           .eq('quest_id', quest.id)
-          .inFilter('status', ['assigned', 'in_progress']).maybeSingle();
+          .maybeSingle();
 
       if (existing != null) {
         throw DuplicateQuestException('Квест уже назначен этому ребёнку');
@@ -187,11 +80,11 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     required String photoUrl,
     required DateTime completedAt,
   }) async {
-    try {
+    Future<void> updateWithStatus(String st) async {
       final updated = await _supabase
           .from('child_quests')
           .update({
-            'status': 'completed',
+            'status': st,
             'child_comment': comment,
             'photo_url': photoUrl,
             'completed_at': completedAt.toIso8601String(),
@@ -200,10 +93,30 @@ class SupabaseChildQuestsService implements ChildQuestsService {
           .eq('child_id', childId)
           .select('id')
           .maybeSingle();
-
       if (updated == null) {
         throw AuthException(
             'NOT_FOUND', 'Запись задания не найдена или нет доступа.');
+      }
+    }
+
+    try {
+      if (!_isUuid(childId)) {
+        throw AuthException('INVALID_ARG', 'childId не uuid: $childId');
+      }
+      if (!_isUuid(assignedId)) {
+        throw AuthException('INVALID_ARG', 'assignedId не uuid: $assignedId');
+      }
+
+      try {
+        await updateWithStatus('completed');
+      } on sb.PostgrestException catch (e) {
+        final msg = (e.message).toLowerCase();
+        if (msg.contains('invalid input value for enum') ||
+            msg.contains('invalid input syntax for type')) {
+          await updateWithStatus('verified');
+        } else {
+          rethrow;
+        }
       }
     } on sb.PostgrestException catch (e) {
       throw AuthException('DB', 'Ошибка завершения квеста: ${e.message}');
@@ -211,5 +124,167 @@ class SupabaseChildQuestsService implements ChildQuestsService {
       throw AuthException(
           'UNKNOWN', 'Ошибка завершения квеста: ${e.toString()}');
     }
+  }
+
+  Future<List<ChildQuest>> _fetchAssigned({required String childId}) async {
+    final rows = await _selectRows(childId);
+    return rows
+        .where((r) => _isAssignedStatusRaw(r.rawStatus))
+        .map(_mapRowToChildQuest)
+        .toList();
+  }
+
+  Future<List<ChildQuest>> _fetchCompleted({required String childId}) async {
+    final rows = await _selectRows(childId);
+    return rows
+        .where((r) => _isCompletedStatusRaw(r.rawStatus))
+        .map(_mapRowToChildQuest)
+        .toList();
+  }
+
+  Future<List<_ChildQuestRow>> _selectRows(String childId) async {
+    try {
+      final select =
+          "id, child_id, quest_id, status, child_comment, photo_url, completed_at, "
+          "quests(id, title, sphere, xp)";
+      final rows = await _supabase
+          .from('child_quests')
+          .select(select)
+          .eq('child_id', childId)
+          .order('created_at', ascending: false);
+
+      final list = (rows as List).cast<Map<String, dynamic>>();
+      return list.map((r) => _ChildQuestRow.fromMap(r)).toList();
+    } on sb.PostgrestException catch (e) {
+      throw AuthException('DB', 'Ошибка загрузки квестов: ${e.message}');
+    } catch (e) {
+      throw AuthException(
+          'UNKNOWN', 'Ошибка загрузки квестов: ${e.toString()}');
+    }
+  }
+
+  ChildQuest _mapRowToChildQuest(_ChildQuestRow row) {
+    final quest = Quest(
+      id: (row.questIdFromJoin ?? row.questId ?? row.id).toString(),
+      title: row.title ?? '',
+      type: _mapSphereToType(row.sphere ?? ''),
+      createdBy: '',
+      updatedAt: DateTime.now(),
+    );
+
+    final status = _mapStatus(row.rawStatus);
+
+    return ChildQuest(
+      id: row.id,
+      childId: row.childId,
+      quest: quest,
+      status: status,
+      childComment: row.childComment,
+      photoUrl: row.photoUrl,
+      completedAt: row.completedAt,
+    );
+  }
+
+  bool _isAssignedStatusRaw(String s) {
+    final v = s.toLowerCase();
+    return {
+      'assigned',
+      'in_progress',
+      'inprogress',
+      'active',
+      'ongoing',
+    }.contains(v);
+  }
+
+  bool _isCompletedStatusRaw(String s) {
+    final v = s.toLowerCase();
+    return {
+      'completed',
+      'verified',
+      'done',
+      'finished',
+      'approved',
+      'complete',
+    }.contains(v);
+  }
+
+  ChildQuestStatus _mapStatus(String s) {
+    if (_isCompletedStatusRaw(s)) return ChildQuestStatus.completed;
+    return ChildQuestStatus.assigned;
+  }
+
+  QuestType _mapSphereToType(String s) {
+    switch (s.toLowerCase()) {
+      case 'physical':
+        return QuestType.physical;
+      case 'emotional':
+        return QuestType.emotional;
+      case 'cognitive':
+        return QuestType.cognitive;
+      case 'social':
+        return QuestType.social;
+      case 'spiritual':
+        return QuestType.spiritual;
+      default:
+        if (s.startsWith('сил')) return QuestType.physical;
+        if (s.startsWith('эмо')) return QuestType.emotional;
+        if (s.startsWith('интел') || s.startsWith('cogn')) {
+          return QuestType.cognitive;
+        }
+        if (s.startsWith('соц')) return QuestType.social;
+        if (s.startsWith('смы') || s.startsWith('spirit')) {
+          return QuestType.spiritual;
+        }
+        return QuestType.cognitive;
+    }
+  }
+
+  final RegExp _uuidRe = RegExp(
+    r'^[0-9a-fA-F]{8}\-?[0-9a-fA-F]{4}\-?[1-5][0-9a-fA-F]{3}\-?[89abAB][0-9a-fA-F]{3}\-?[0-9a-fA-F]{12}$',
+  );
+  bool _isUuid(String? s) => s != null && _uuidRe.hasMatch(s);
+}
+
+class _ChildQuestRow {
+  final String id;
+  final String childId;
+  final String? questId;
+  final String? questIdFromJoin;
+  final String rawStatus;
+  final String? childComment;
+  final String? photoUrl;
+  final DateTime? completedAt;
+  final String? title;
+  final String? sphere;
+
+  _ChildQuestRow({
+    required this.id,
+    required this.childId,
+    required this.rawStatus,
+    this.questId,
+    this.questIdFromJoin,
+    this.childComment,
+    this.photoUrl,
+    this.completedAt,
+    this.title,
+    this.sphere,
+  });
+
+  factory _ChildQuestRow.fromMap(Map<String, dynamic> r) {
+    final q = (r['quests'] as Map<String, dynamic>?) ?? const {};
+    return _ChildQuestRow(
+      id: r['id'].toString(),
+      childId: r['child_id'].toString(),
+      questId: r['quest_id']?.toString(),
+      questIdFromJoin: q['id']?.toString(),
+      rawStatus: (r['status']?.toString() ?? '').toLowerCase(),
+      childComment: r['child_comment'] as String?,
+      photoUrl: r['photo_url'] as String?,
+      completedAt: r['completed_at'] != null
+          ? DateTime.tryParse(r['completed_at'].toString())
+          : null,
+      title: (q['title'] as String?)?.trim(),
+      sphere: (q['sphere'] as String?)?.trim(),
+    );
   }
 }

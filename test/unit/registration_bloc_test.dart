@@ -40,13 +40,13 @@ void main() {
     const email = 'test@example.com';
     const password = 'password123';
     const firstName = 'Test'; // [!code addition]
-    const lastName = 'User';   // [!code addition]
+    const lastName = 'User'; // [!code addition]
     const userSession = UserSessionModel(
       token: 'token',
       role: 'psychologist', // [!code change]
       email: email,
       firstName: firstName, // [!code addition]
-      lastName: lastName,   // [!code addition]
+      lastName: lastName, // [!code addition]
     );
 
     blocTest<RegistrationBloc, RegistrationState>(
@@ -59,7 +59,7 @@ void main() {
       expect: () => <dynamic>[],
       verify: (bloc) {
         expect(bloc.state.status, RegistrationStatus.initial); // [!code change]
-        expect(bloc.state.role, Role.psychologist);            // [!code addition]
+        expect(bloc.state.role, Role.psychologist); // [!code addition]
       },
     );
 
@@ -68,7 +68,7 @@ void main() {
       build: () {
         when(
           // [!code change] Обновление сигнатуры с ФИО
-              () => mockAuthService.registerPsychologist(
+          () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
             firstName: firstName,
@@ -90,8 +90,8 @@ void main() {
       )),
       expect: () => [
         // [!code change] Проверяем статус 'submitting'
-        isA<RegistrationState>().having(
-                (s) => s.status, 'status', RegistrationStatus.submitting),
+        isA<RegistrationState>()
+            .having((s) => s.status, 'status', RegistrationStatus.submitting),
         // [!code change] Проверяем статус 'success'
         isA<RegistrationState>()
             .having((s) => s.status, 'status', RegistrationStatus.success),
@@ -99,7 +99,7 @@ void main() {
       verify: (_) {
         verify(
           // [!code change] Проверка вызова с ФИО
-              () => mockAuthService.registerPsychologist(
+          () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
             firstName: firstName,
@@ -115,7 +115,7 @@ void main() {
       build: () {
         when(
           // [!code change] Обновление сигнатуры с ФИО
-              () => mockAuthService.registerPsychologist(
+          () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
             firstName: firstName,
@@ -136,20 +136,21 @@ void main() {
       )),
       expect: () => [
         // [!code change] Проверяем статус 'submitting'
-        isA<RegistrationState>().having(
-                (s) => s.status, 'status', RegistrationStatus.submitting),
         isA<RegistrationState>()
-            .having((s) => s.status, 'status', RegistrationStatus.error) // [!code change]
+            .having((s) => s.status, 'status', RegistrationStatus.submitting),
+        isA<RegistrationState>()
+            .having((s) => s.status, 'status',
+                RegistrationStatus.error) // [!code change]
             .having(
               (s) => s.errorMessage,
-          'errorMessage',
-          'Test error message',
-        ),
+              'errorMessage',
+              'Test error message',
+            ),
       ],
       verify: (_) {
         verify(
           // [!code change] Проверка вызова с ФИО
-              () => mockAuthService.registerPsychologist(
+          () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
             firstName: firstName,
@@ -165,7 +166,7 @@ void main() {
       build: () {
         when(
           // [!code change] Обновление сигнатуры с ФИО
-              () => mockAuthService.registerPsychologist(
+          () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
             firstName: firstName,
@@ -186,20 +187,21 @@ void main() {
       )),
       expect: () => [
         // [!code change] Проверяем статус 'submitting'
-        isA<RegistrationState>().having(
-                (s) => s.status, 'status', RegistrationStatus.submitting),
         isA<RegistrationState>()
-            .having((s) => s.status, 'status', RegistrationStatus.error) // [!code change]
+            .having((s) => s.status, 'status', RegistrationStatus.submitting),
+        isA<RegistrationState>()
+            .having((s) => s.status, 'status',
+                RegistrationStatus.error) // [!code change]
             .having(
               (s) => s.errorMessage,
-          'errorMessage',
-          'Неизвестная ошибка. Повторите попытку.',
-        ),
+              'errorMessage',
+              'Неизвестная ошибка. Повторите попытку.',
+            ),
       ],
       verify: (_) {
         verify(
           // [!code change] Проверка вызова с ФИО
-              () => mockAuthService.registerPsychologist(
+          () => mockAuthService.registerPsychologist(
             email: email,
             password: password,
             firstName: firstName,

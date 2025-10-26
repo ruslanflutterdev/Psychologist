@@ -47,13 +47,13 @@ class SupabasePsychologistService implements PsychologistService {
 
       if (row != null) {
         firstName = (row['first_name'] as String?)?.trim();
-        lastName  = (row['last_name']  as String?)?.trim();
+        lastName = (row['last_name'] as String?)?.trim();
         avatarUrl = row['avatar_url'] as String?;
       }
 
       final meta = user.userMetadata ?? const <String, dynamic>{};
       firstName = (firstName ?? meta['first_name'] as String? ?? '').trim();
-      lastName  = (lastName  ?? meta['last_name']  as String? ?? '').trim();
+      lastName = (lastName ?? meta['last_name'] as String? ?? '').trim();
 
       return PsychologistModel(
         id: user.id,

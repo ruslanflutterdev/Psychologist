@@ -42,10 +42,13 @@ void main() {
     when(
       () => mockAuth.registerPsychologist(
         email: any(named: 'email'),
-        password: any(named: 'password'), firstName: '', lastName: '',
+        password: any(named: 'password'),
+        firstName: '',
+        lastName: '',
       ),
     ).thenAnswer(
-      (_) async => const UserSessionModel(token: 't', role: 'p', email: 'e', firstName: '', lastName: ''),
+      (_) async => const UserSessionModel(
+          token: 't', role: 'p', email: 'e', firstName: '', lastName: ''),
     );
 
     // Для виджет-теста устанавливаем mockAuth в ServiceRegistry
@@ -74,7 +77,8 @@ void main() {
   }
 
   group('Registration Password Security Tests', () {
-    testWidgets('Validation errors are shown for weak passwords in both fields', (
+    testWidgets('Validation errors are shown for weak passwords in both fields',
+        (
       tester,
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
@@ -162,7 +166,9 @@ void main() {
       verify(
         () => mockAuth.registerPsychologist(
           email: 'test@example.com',
-          password: 'Correct1!', firstName: '', lastName: '',
+          password: 'Correct1!',
+          firstName: '',
+          lastName: '',
         ),
       ).called(1);
     });

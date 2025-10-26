@@ -52,13 +52,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<RegistrationBloc>().add(
-      RegistrationSubmitted(
-        email: _emailCtrl.text,
-        password: _passCtrl.text,
-        firstName: _firstNameCtrl.text,
-        lastName: _lastNameCtrl.text,
-      ),
-    );
+          RegistrationSubmitted(
+            email: _emailCtrl.text,
+            password: _passCtrl.text,
+            firstName: _firstNameCtrl.text,
+            lastName: _lastNameCtrl.text,
+          ),
+        );
   }
 
   bool get _canSubmit => _consentChecked && !widget.state.isLoading;
@@ -101,7 +101,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
           const SizedBox(height: 12),
           RegistrationPasswordField(controller: _passCtrl),
           const SizedBox(height: 12),
-
           TextFormField(
             controller: _confirmCtrl,
             obscureText: true,
@@ -116,7 +115,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
               return null;
             },
           ),
-
           const SizedBox(height: 12),
           ConsentRow(
             checkbox: ConsentCheckbox(
@@ -126,7 +124,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
             onOpenAgreement: _openAgreement,
           ),
           const SizedBox(height: 16),
-
           if (state.errorMessage != null)
             Text(
               state.errorMessage!,
@@ -134,7 +131,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 color: theme.colorScheme.error,
               ),
             ),
-
           const SizedBox(height: 8),
           RegistrationSubmitButton(
             enabled: _canSubmit,

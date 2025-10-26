@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-
   group('Auth flows', () {
-    setUpAll(() async {
-    });
+    setUpAll(() async {});
 
     testWidgets('Registration navigates to Home', (WidgetTester tester) async {
       app.main();
@@ -19,7 +17,8 @@ void main() {
       final registerBtn = find.byKey(const Key('register_button'));
 
       await tester.tap(email);
-      await tester.enterText(email, 'test+${DateTime.now().millisecondsSinceEpoch}@example.com');
+      await tester.enterText(
+          email, 'test+${DateTime.now().millisecondsSinceEpoch}@example.com');
       await tester.tap(password);
       await tester.enterText(password, 'Password123!');
       await tester.tap(confirm);

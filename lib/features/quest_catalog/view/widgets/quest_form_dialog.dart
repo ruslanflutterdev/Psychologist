@@ -129,7 +129,6 @@ class _QuestFormDialogState extends State<QuestFormDialog> {
                   validator: validateQuestType,
                 ),
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: _xpCtrl,
                   decoration: const InputDecoration(labelText: 'Опыт (XP)'),

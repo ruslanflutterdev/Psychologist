@@ -42,7 +42,12 @@ void main() {
   // Регистрация fallback-значений для mocktail
   setUpAll(() {
     registerFallbackValue(
-      const UserSessionModel(token: 'token', role: 'psych', email: 'a@b.c', firstName: '', lastName: ''),
+      const UserSessionModel(
+          token: 'token',
+          role: 'psych',
+          email: 'a@b.c',
+          firstName: '',
+          lastName: ''),
     );
   });
 
@@ -82,7 +87,9 @@ void main() {
       const UserSessionModel(
         token: 'active',
         role: 'psych',
-        email: 'test@psych.com', firstName: '', lastName: '',
+        email: 'test@psych.com',
+        firstName: '',
+        lastName: '',
       ),
     );
     when(() => mockSessionCubit.clear()).thenAnswer((_) {});

@@ -30,7 +30,6 @@ class PsychWebApp extends StatelessWidget {
         title: 'PsyWell – Psychologist Web',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-
         home: startAtReset
             ? BlocProvider(
                 create: (_) => ResetBloc(auth: ServiceRegistry.auth),

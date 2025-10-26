@@ -128,7 +128,7 @@ class _ChildProfileHarnessState extends State<ChildProfileHarness> {
                               a.previewUrl!,
                               key: Tk.completedPhoto(a.id),
                               errorBuilder: (context, error, stackTrace) =>
-                              const SizedBox(width: 40, height: 40),
+                                  const SizedBox(width: 40, height: 40),
                             ),
                           ),
                       ],

@@ -56,7 +56,7 @@ class AssignQuest extends QuestsEvent {
 class QuestsBloc extends Bloc<QuestsEvent, QuestsState> {
   final QuestsRepository repo;
   QuestsBloc(this.repo)
-    : super(QuestsState(available: [], visible: [], assigned: [])) {
+      : super(QuestsState(available: [], visible: [], assigned: [])) {
     on<LoadQuests>(_onLoad);
     on<ApplyFilter>(_onFilter);
     on<AssignQuest>(_onAssign);

@@ -13,8 +13,7 @@ void setupAuthRecoveryListener(GlobalKey<NavigatorState> navigatorKey) {
 
     final hasRecoveryFragment = Uri.base.fragment.contains('type=recovery');
     final hasPkceCode = Uri.base.queryParameters.containsKey('code');
-    final isRecoveryFlow =
-        hasRecoveryFragment ||
+    final isRecoveryFlow = hasRecoveryFragment ||
         hasPkceCode ||
         event == AuthChangeEvent.passwordRecovery;
 

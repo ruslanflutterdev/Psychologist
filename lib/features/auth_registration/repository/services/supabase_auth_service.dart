@@ -229,7 +229,8 @@ class SupabaseAuthService implements AuthService {
     if (m.contains('email not confirmed')) {
       return 'Подтвердите email через письмо и попробуйте снова';
     }
-    if (m.contains('auth session missing') || m.contains('invalid refresh token')) {
+    if (m.contains('auth session missing') ||
+        m.contains('invalid refresh token')) {
       return 'Срок действия ссылки для сброса пароля истёк. Пожалуйста, запросите сброс снова.';
     }
     return raw;
