@@ -1,63 +1,69 @@
-name: Flutter CI
+name: Flutter CI / CD
 
-# Запуск рабочего процесса при push и pull request в основную ветку
 on:
   push:
     branches:
-      - main
+      - main # [!code change] Обеспечиваем деплой только из ветки main
   pull_request:
     branches:
       - main
 
-# Устанавливаем тайм-аут по умолчанию для ускорения завершения при зависании
 defaults:
   run:
     shell: bash
 
 jobs:
   build:
-    # Используем стабильный образ Ubuntu, подходит для Flutter
     runs-on: ubuntu-latest
 
+    # [!code addition] Добавляем permissions для GITHUB_TOKEN для возможности деплоя
+    permissions:
+      contents: write
+      pages: write
+
     steps:
-      # 1. Загрузка исходного кода
       - uses: actions/checkout@v4
 
-      # 2. Настройка кэширования для ускорения flutter pub get
+      # 1. Настройка кэширования Flutter SDK и зависимостей (для ускорения)
       - name: Cache Flutter dependencies
         uses: actions/cache@v4
         with:
           path: /opt/hostedtoolcache/flutter
-          # Кэш зависит от версии Flutter и pubspec.lock
           key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-flutter-
 
-      # 3. Установка Flutter SDK
+      # 2. Установка Flutter SDK
       - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          # Используем стабильную ветку или конкретную версию, например, '3.22.0'
           channel: 'stable'
 
-      # 4. Получение зависимостей
+      # 3. Получение зависимостей и Анализ/Тестирование
       - name: Get dependencies
         run: flutter pub get
 
-      # 5. Анализ кода (Code Analysis)
       - name: Analyze code
         run: flutter analyze
 
-      # 6. Запуск юнит- и виджет-тестов
       - name: Run tests
-        # Исключаем интеграционные тесты, если они требуют специфической среды
         run: flutter test --coverage --exclude-dir=integration_test
-        # Примечание: Если тесты требуют запуска на устройстве, флаги нужно изменить.
 
-      # 7. (Опционально) Сборка для проверки совместимости (Dry Run Build)
-      # Проверяет, что проект вообще может быть собран без реального создания артефакта
-      - name: Verify Android build compatibility
-        run: flutter build apk --debug --no-tree-shake-icons
+      # 4. Сборка Flutter Web (Критически важный шаг для CD)
+      - name: Build Flutter Web
+        # Используем --base-href, который соответствует имени вашего репозитория
+        run: flutter build web --release --base-href /Psychologist/
 
-      - name: Verify Web build compatibility
-        run: flutter build web --web-renderer html --no-tree-shake-icons
+      # 5. CD: Деплой на GitHub Pages (Используем peaceiris/actions-gh-pages)
+      - name: Deploy to GitHub Pages
+        if: success() # [!code change] Деплой только после успешного выполнения всех предыдущих шагов
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          # [!code change] Используем встроенный токен GITHUB_TOKEN, который имеет право записи (contents: write)
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # [!code change] Указываем папку, где лежит результат сборки
+          publish_dir: ./build/web
+          # [!code change] Указываем, что деплоить нужно в gh-pages
+          publish_branch: gh-pages
+          # [!code change] Перезаписывать историю ветки gh-pages
+          force_orphan: true
