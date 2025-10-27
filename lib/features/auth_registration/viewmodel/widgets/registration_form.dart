@@ -99,14 +99,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
           const SizedBox(height: 12),
           RegistrationEmailField(controller: _emailCtrl),
           const SizedBox(height: 12),
-          RegistrationPasswordField(controller: _passCtrl),
+          RegistrationPasswordField(
+            controller: _passCtrl,
+            labelText: 'Пароль',
+            validator: validateSecurePassword,
+          ),
           const SizedBox(height: 12),
-          TextFormField(
+          RegistrationPasswordField(
             controller: _confirmCtrl,
-            obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Подтверждение пароля',
-            ),
+            labelText: 'Подтверждение пароля',
             validator: (v) {
               final securityError = validateSecurePassword(v);
               if (securityError != null) return securityError;
