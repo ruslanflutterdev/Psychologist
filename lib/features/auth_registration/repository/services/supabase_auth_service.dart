@@ -103,6 +103,7 @@ class SupabaseAuthService implements AuthService {
         );
       }
 
+
       // Роль берём из app_users
       final currentRole = await _loadRole(user.id);
 
@@ -164,8 +165,9 @@ class SupabaseAuthService implements AuthService {
     try {
       await _supabase.auth.signOut();
     } on sb.AuthException catch (e) {
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('SUPABASE logout error: ${_pretty(e.message)}');
+      }
     } on core.AuthException catch (e) {
       if (kDebugMode) debugPrint('CORE AuthException on logout: ${e.message}');
     } catch (e) {
