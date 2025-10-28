@@ -55,8 +55,8 @@ class PsychologistScreen extends StatelessWidget {
               elevation: 0.5,
               actions: [
                 IconButton(
-                  tooltip: 'Создать квест',
-                  icon: const Icon(Icons.add),
+                  tooltip: 'Каталог квестов',
+                  icon: const Icon(Icons.library_add),
                   onPressed: () => _openQuestsCatalog(context),
                 ),
                 TextButton.icon(
