@@ -103,6 +103,7 @@ class SupabaseAuthService implements AuthService {
         );
       }
 
+
       // Роль берём из app_users
       final currentRole = await _loadRole(user.id);
 
@@ -164,9 +165,13 @@ class SupabaseAuthService implements AuthService {
     try {
       await _supabase.auth.signOut();
     } on sb.AuthException catch (e) {
-      throw core.AuthException('SUPABASE', _pretty(e.message));
+      if (kDebugMode) {
+        debugPrint('SUPABASE logout error: ${_pretty(e.message)}');
+      }
+    } on core.AuthException catch (e) {
+      if (kDebugMode) debugPrint('CORE AuthException on logout: ${e.message}');
     } catch (e) {
-      throw core.AuthException('UNKNOWN', 'Ошибка выхода: ${e.toString()}');
+      if (kDebugMode) debugPrint('UNKNOWN logout error: ${e.toString()}');
     }
   }
 
@@ -199,7 +204,6 @@ class SupabaseAuthService implements AuthService {
     return {'first_name': firstName, 'last_name': lastName};
   }
 
-  /// Роль берём из `app_users`
   Future<String> _loadRole(String userId) async {
     try {
       final roleResponse = await _supabase
@@ -215,7 +219,6 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
-  /// Нормализация текстов ошибок Supabase
   String _pretty(String raw) {
     final m = raw.toLowerCase();
     if (m.contains('email already registered') ||

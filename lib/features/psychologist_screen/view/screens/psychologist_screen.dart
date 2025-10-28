@@ -44,27 +44,31 @@ class PsychologistScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SessionCubit, dynamic>(
       builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const _AppBarTitle(),
-            backgroundColor: Colors.white,
-            scrolledUnderElevation: 0,
-            elevation: 0.5,
-            actions: [
-              IconButton(
-                tooltip: 'Создать квест',
-                icon: const Icon(Icons.add),
-                onPressed: () => _openQuestsCatalog(context),
-              ),
-              TextButton.icon(
-                onPressed: () => _logout(context),
-                icon: const Icon(Icons.logout),
-                label: const Text('Выйти'),
-                style: TextButton.styleFrom(foregroundColor: Colors.black),
-              ),
-            ],
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) => _logout(context),
+          child: Scaffold(
+            appBar: AppBar(
+              title: const _AppBarTitle(),
+              backgroundColor: Colors.white,
+              scrolledUnderElevation: 0,
+              elevation: 0.5,
+              actions: [
+                IconButton(
+                  tooltip: 'Создать квест',
+                  icon: const Icon(Icons.add),
+                  onPressed: () => _openQuestsCatalog(context),
+                ),
+                TextButton.icon(
+                  onPressed: () => _logout(context),
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Выйти'),
+                  style: TextButton.styleFrom(foregroundColor: Colors.black),
+                ),
+              ],
+            ),
+            body: PsychologistBody(onOpenChild: (c) => _openChild(context, c)),
           ),
-          body: PsychologistBody(onOpenChild: (c) => _openChild(context, c)),
         );
       },
     );

@@ -27,8 +27,17 @@ void main() {
   late MockAuthService mockAuth;
   late MockSessionCubit mockSessionCubit;
 
+  // [!code addition] Константы для валидных данных
+  const validFirstName = 'Test';
+  const validLastName = 'User';
+  const validEmail = 'test@example.com';
+  const validPassword = 'Correct1!';
+
   setUpAll(() {
     registerFallbackValue(UserSessionModelFake());
+    // [!code addition] Регистрация fallback-значений для новых обязательных полей
+    registerFallbackValue(validFirstName);
+    registerFallbackValue(validLastName);
   });
 
   setUp(() {
@@ -39,16 +48,22 @@ void main() {
       () => mockSessionCubit.stream,
     ).thenAnswer((_) => const Stream<UserSessionModel?>.empty());
     when(() => mockSessionCubit.close()).thenAnswer((_) => Future.value());
+
+    // [!code addition] Обновленный мок для регистрации с 4 полями
     when(
       () => mockAuth.registerPsychologist(
         email: any(named: 'email'),
         password: any(named: 'password'),
-        firstName: '',
-        lastName: '',
+        firstName: any(named: 'firstName'),
+        lastName: any(named: 'lastName'),
       ),
     ).thenAnswer(
       (_) async => const UserSessionModel(
-          token: 't', role: 'p', email: 'e', firstName: '', lastName: ''),
+          token: 't',
+          role: 'p',
+          email: validEmail,
+          firstName: validFirstName,
+          lastName: validLastName),
     );
 
     // Для виджет-теста устанавливаем mockAuth в ServiceRegistry
@@ -83,10 +98,21 @@ void main() {
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
+      // [!code addition] Finders для всех полей
+      final firstNameField = find.byType(TextFormField).at(0);
+      final lastNameField = find.byType(TextFormField).at(1);
+      final emailField = find.byType(TextFormField).at(2);
+
       final passwordField = findPasswordField('Пароль');
       final confirmField = findPasswordField('Подтверждение пароля');
       final submitButton = find.byType(RegistrationSubmitButton);
       final consentCheckbox = find.byType(ConsentCheckbox);
+
+      // [!code addition] Предварительное заполнение Имени, Фамилии и Email
+      await tester.enterText(firstNameField, validFirstName);
+      await tester.enterText(lastNameField, validLastName);
+      await tester.enterText(emailField, validEmail);
+      await tester.pump();
 
       // 1. Отмечаем согласие, чтобы кнопка стала активной
       await tester.tap(consentCheckbox);
@@ -102,7 +128,8 @@ void main() {
       await tester.enterText(passwordField, '1234567');
       await tester.enterText(confirmField, '1234567');
 
-      // Активируем валидацию, нажимая на кнопку submit. Это вызовет validate(), который вернет false.
+      // Активируем валидацию, нажимая на кнопку submit.
+      await tester.ensureVisible(submitButton); // [!code addition] Скроллинг
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -118,6 +145,7 @@ void main() {
       await tester.enterText(confirmField, 'weakpass123!');
 
       // Активируем валидацию, нажимая на кнопку submit
+      await tester.ensureVisible(submitButton); // [!code addition] Скроллинг
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -129,8 +157,9 @@ void main() {
       );
 
       // 4. Вводим сильный, но несовпадающий пароль
-      await tester.enterText(passwordField, 'Correct1!');
+      await tester.enterText(passwordField, validPassword);
       await tester.enterText(confirmField, 'Correct2!');
+      await tester.ensureVisible(submitButton); // [!code addition] Скроллинг
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
@@ -143,32 +172,21 @@ void main() {
       );
 
       // 5. Вводим полностью валидный и совпадающий пароль
-      await tester.enterText(confirmField, 'Correct1!');
+      await tester.enterText(confirmField, validPassword);
+      await tester.ensureVisible(submitButton); // [!code addition] Скроллинг
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
 
-      // Проверяем, что ошибок нет, и кнопка активна
+      // Проверяем, что ошибок нет, и переход произошел (проверка вызова auth.register)
       expect(find.text('Пароли не совпадают'), findsNothing);
-      expect(
-        tester.widget<RegistrationSubmitButton>(submitButton).enabled,
-        isTrue,
-        reason: 'Кнопка должна быть активна',
-      );
 
       // 6. Проверяем, что при попытке регистрации с корректным паролем вызывается auth.register
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'test@example.com',
-      ); // Вводим Email
-      await tester.tap(submitButton);
-      await tester.pumpAndSettle();
-
       verify(
         () => mockAuth.registerPsychologist(
-          email: 'test@example.com',
-          password: 'Correct1!',
-          firstName: '',
-          lastName: '',
+          email: validEmail,
+          password: validPassword,
+          firstName: validFirstName, // [!code addition] Проверка имени
+          lastName: validLastName, // [!code addition] Проверка фамилии
         ),
       ).called(1);
     });
