@@ -9,8 +9,6 @@ import 'package:heros_journey/features/auth_registration/repository/services/sup
 import 'package:heros_journey/features/child_screen/repository/services/child_progress_service.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_quests_service.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_service.dart';
-import 'package:heros_journey/features/child_screen/repository/services/mock_parent_contact_service.dar.dart';
-import 'package:heros_journey/features/child_screen/repository/services/parent_contact_service.dart';
 import 'package:heros_journey/features/child_screen/repository/services/supabase_child_quests_service.dart';
 import 'package:heros_journey/features/child_screen/repository/services/supabase_child_service.dart';
 import 'package:heros_journey/features/child_screen/repository/services/supabase_progress_service.dart';
@@ -27,7 +25,6 @@ class ServiceRegistry {
   static late AgreementService agreement;
   static late QuestCatalogService questCatalog;
   static late ChildQuestsService childQuests;
-  static late ParentContactService parentContact;
 
   static void initSupabase() {
     auth = SupabaseAuthService(sb.Supabase.instance.client);
@@ -38,6 +35,5 @@ class ServiceRegistry {
     agreement = const MockAgreementService();
     questCatalog = SupabaseQuestCatalogService(sb.Supabase.instance.client);
     childQuests = SupabaseChildQuestsService(sb.Supabase.instance.client);
-    parentContact = MockParentContactService();
   }
 }
