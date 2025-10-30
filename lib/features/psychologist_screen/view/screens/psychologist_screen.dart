@@ -40,35 +40,40 @@ class PsychologistScreen extends StatelessWidget {
     );
   }
 
+  void _openAchievements(BuildContext context) {
+    Navigator.of(context).pushNamed('/achievements');
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SessionCubit, dynamic>(
       builder: (context, state) {
-        return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) => _logout(context),
-          child: Scaffold(
-            appBar: AppBar(
-              title: const _AppBarTitle(),
-              backgroundColor: Colors.white,
-              scrolledUnderElevation: 0,
-              elevation: 0.5,
-              actions: [
-                IconButton(
-                  tooltip: 'Каталог квестов',
-                  icon: const Icon(Icons.library_add),
-                  onPressed: () => _openQuestsCatalog(context),
-                ),
-                TextButton.icon(
-                  onPressed: () => _logout(context),
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Выйти'),
-                  style: TextButton.styleFrom(foregroundColor: Colors.black),
-                ),
-              ],
-            ),
-            body: PsychologistBody(onOpenChild: (c) => _openChild(context, c)),
+        return Scaffold(
+          appBar: AppBar(
+            title: const _AppBarTitle(),
+            backgroundColor: Colors.white,
+            scrolledUnderElevation: 0,
+            elevation: 0.5,
+            actions: [
+              IconButton(
+                tooltip: 'Каталог ачивок',
+                icon: const Icon(Icons.star),
+                onPressed: () => _openAchievements(context),
+              ),
+              IconButton(
+                tooltip: 'Каталог квестов',
+                icon: const Icon(Icons.library_add),
+                onPressed: () => _openQuestsCatalog(context),
+              ),
+              TextButton.icon(
+                onPressed: () => _logout(context),
+                icon: const Icon(Icons.logout),
+                label: const Text('Выйти'),
+                style: TextButton.styleFrom(foregroundColor: Colors.black),
+              ),
+            ],
           ),
+          body: PsychologistBody(onOpenChild: (c) => _openChild(context, c)),
         );
       },
     );

@@ -9,7 +9,7 @@ class SupabaseChildService implements ChildService {
   sb.RealtimeChannel? _childrenChannel;
   sb.RealtimeChannel? _parentChannel;
   final StreamController<List<ChildModel>> _controller =
-  StreamController.broadcast();
+      StreamController.broadcast();
   List<ChildModel>? _latestChildrenCache;
 
   SupabaseChildService(this._supabase) {
@@ -28,6 +28,7 @@ class SupabaseChildService implements ChildService {
       if (joinResult is Map) return [joinResult];
       return null;
     }
+
     final parentChildsRaw = r['parent_childs'];
     final parentChilds = normalizeJoinResult(parentChildsRaw);
     final parentChild = parentChilds != null && parentChilds.isNotEmpty
@@ -35,13 +36,15 @@ class SupabaseChildService implements ChildService {
         : null;
     final parentProfilesRaw = parentChild?['parent_profiles'];
     final normalizedParentProfiles = normalizeJoinResult(parentProfilesRaw);
-    final parentProfile = normalizedParentProfiles != null && normalizedParentProfiles.isNotEmpty
-        ? normalizedParentProfiles.cast<Map<String, dynamic>>().first
-        : null;
+    final parentProfile =
+        normalizedParentProfiles != null && normalizedParentProfiles.isNotEmpty
+            ? normalizedParentProfiles.cast<Map<String, dynamic>>().first
+            : null;
     final parentFirstName = parentProfile?['first_name'] as String?;
     final parentLastName = parentProfile?['last_name'] as String?;
     final parentNumber = parentProfile?['number'] as String?;
-    final parentFullName = (parentFirstName?.isNotEmpty == true && parentLastName?.isNotEmpty == true)
+    final parentFullName = (parentFirstName?.isNotEmpty == true &&
+            parentLastName?.isNotEmpty == true)
         ? '$parentFirstName $parentLastName'
         : parentFirstName ?? parentLastName;
 
@@ -70,10 +73,12 @@ class SupabaseChildService implements ChildService {
           .order('created_at', ascending: true);
 
       if (kDebugMode) {
-        debugPrint('SupabaseChildService: Full fetch completed for ${rows.length} children.');
+        debugPrint(
+            'SupabaseChildService: Full fetch completed for ${rows.length} children.');
       }
 
-      final list = (rows as List).cast<Map<String, dynamic>>().map(_mapRow).toList();
+      final list =
+          (rows as List).cast<Map<String, dynamic>>().map(_mapRow).toList();
 
       list.sort((a, b) {
         final dateA = a.updatedAt ?? DateTime(0);
@@ -82,15 +87,16 @@ class SupabaseChildService implements ChildService {
       });
 
       return list;
-
     } on sb.PostgrestException catch (e) {
       if (kDebugMode) {
-        debugPrint('SupabaseChildService PostgrestError on fetch: ${e.message}');
+        debugPrint(
+            'SupabaseChildService PostgrestError on fetch: ${e.message}');
       }
       rethrow;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('SupabaseChildService Unknown Error on fetch: ${e.toString()}');
+        debugPrint(
+            'SupabaseChildService Unknown Error on fetch: ${e.toString()}');
       }
       rethrow;
     }
@@ -106,6 +112,8 @@ class SupabaseChildService implements ChildService {
     }
   }
 
+  Future<void> refresh() => refetchAndStream();
+
   void _subscribeToChildrenChanges() async {
     await refetchAndStream().catchError((Object e) {
       if (kDebugMode) debugPrint('Initial data fetch failed: ${e.toString()}');
@@ -115,33 +123,35 @@ class SupabaseChildService implements ChildService {
       await refetchAndStream();
     }
 
-
-    _childrenChannel = _supabase.channel('public:child_profiles_events')
+    _childrenChannel = _supabase
+        .channel('public:child_profiles_events')
         .onPostgresChanges(
-      event: sb.PostgresChangeEvent.all,
-      schema: 'public',
-      table: 'child_profiles',
-      callback: (payload) async {
-        if (kDebugMode) {
-          debugPrint('Realtime child_profiles change detected: ${payload.eventType}');
-        }
-        await refetchAndStreamHandler();
-      },
-    )
+          event: sb.PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'child_profiles',
+          callback: (payload) async {
+            if (kDebugMode) {
+              debugPrint(
+                  'Realtime child_profiles change detected: ${payload.eventType}');
+            }
+            await refetchAndStreamHandler();
+          },
+        )
         .subscribe();
 
-    _parentChannel = _supabase.channel('public:parent_profiles_events')
+    _parentChannel = _supabase
+        .channel('public:parent_profiles_events')
         .onPostgresChanges(
-      event: sb.PostgresChangeEvent.update,
-      schema: 'public',
-      table: 'parent_profiles',
-      callback: (payload) async {
-        if (kDebugMode) {
-          debugPrint('Realtime parent_profiles UPDATE detected');
-        }
-        await refetchAndStreamHandler();
-      },
-    )
+          event: sb.PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'parent_profiles',
+          callback: (payload) async {
+            if (kDebugMode) {
+              debugPrint('Realtime parent_profiles UPDATE detected');
+            }
+            await refetchAndStreamHandler();
+          },
+        )
         .subscribe();
   }
 
