@@ -50,8 +50,9 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate() || _selectedIconName.isEmpty) {
-      if (_selectedIconName.isEmpty)
+      if (_selectedIconName.isEmpty) {
         setState(() => _formError = 'Выберите иконку ачивки.');
+      }
       return;
     }
 
