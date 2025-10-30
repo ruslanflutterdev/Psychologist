@@ -4,6 +4,8 @@ import 'package:heros_journey/core/services/mock_quest_service.dart';
 import 'package:heros_journey/core/services/quest_catalog_service.dart';
 import 'package:heros_journey/core/services/quest_service.dart';
 import 'package:heros_journey/core/services/supabase_quest_catalog_service.dart';
+import 'package:heros_journey/features/achievements/repository/achievement_service.dart';
+import 'package:heros_journey/features/achievements/repository/supabase_achievement_service.dart';
 import 'package:heros_journey/features/auth_registration/repository/services/auth_service.dart';
 import 'package:heros_journey/features/auth_registration/repository/services/supabase_auth_service.dart';
 import 'package:heros_journey/features/child_screen/repository/services/child_progress_service.dart';
@@ -25,6 +27,7 @@ class ServiceRegistry {
   static late AgreementService agreement;
   static late QuestCatalogService questCatalog;
   static late ChildQuestsService childQuests;
+  static late AchievementService achievement;
 
   static void initSupabase() {
     auth = SupabaseAuthService(sb.Supabase.instance.client);
@@ -35,5 +38,18 @@ class ServiceRegistry {
     agreement = const MockAgreementService();
     questCatalog = SupabaseQuestCatalogService(sb.Supabase.instance.client);
     childQuests = SupabaseChildQuestsService(sb.Supabase.instance.client);
+    achievement = SupabaseAchievementService(sb.Supabase.instance.client);
+  }
+
+  static void dispose() {
+    (child as SupabaseChildService).dispose();
+    (achievement as SupabaseAchievementService).dispose();
+  }
+
+  static Future<void> refreshAllServices() async {
+    await Future.wait([
+      (child as SupabaseChildService).refresh(),
+      (achievement as SupabaseAchievementService).refresh(),
+    ]);
   }
 }

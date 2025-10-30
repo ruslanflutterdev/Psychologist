@@ -40,13 +40,20 @@ class PsychologistScreen extends StatelessWidget {
     );
   }
 
+  void _openAchievements(BuildContext context) {
+    Navigator.of(context).pushNamed('/achievements');
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SessionCubit, dynamic>(
       builder: (context, state) {
         return PopScope(
           canPop: false,
-          onPopInvokedWithResult: (didPop, result) => _logout(context),
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            _logout(context);
+          },
           child: Scaffold(
             appBar: AppBar(
               title: const _AppBarTitle(),
@@ -54,6 +61,11 @@ class PsychologistScreen extends StatelessWidget {
               scrolledUnderElevation: 0,
               elevation: 0.5,
               actions: [
+                IconButton(
+                  tooltip: 'Каталог ачивок',
+                  icon: const Icon(Icons.star),
+                  onPressed: () => _openAchievements(context),
+                ),
                 IconButton(
                   tooltip: 'Каталог квестов',
                   icon: const Icon(Icons.library_add),

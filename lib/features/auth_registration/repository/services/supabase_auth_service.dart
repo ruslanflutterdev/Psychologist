@@ -103,7 +103,6 @@ class SupabaseAuthService implements AuthService {
         );
       }
 
-
       // Роль берём из app_users
       final currentRole = await _loadRole(user.id);
 

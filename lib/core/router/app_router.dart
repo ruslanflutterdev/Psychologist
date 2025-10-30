@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
+import 'package:heros_journey/features/achievements/view/screens/achievements_screen.dart';
 import 'package:heros_journey/features/agreement/view/agreement_screen.dart';
 import 'package:heros_journey/features/auth_forgot/view/screens/forgot_screen.dart';
 import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_bloc.dart';
@@ -68,6 +69,11 @@ class AppRouter {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const QuestsCatalogScreen(),
+        );
+      case '/achievements': // [!code addition:start]
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const AchievementsScreen(),
         );
       default:
         return _redirect('/login');
