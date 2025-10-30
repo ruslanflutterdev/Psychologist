@@ -1,42 +1,42 @@
-name: Flutter Web Deploy to GitHub Pages
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📦 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Setup Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.35.6'
-
-      - name: 🖥️ Build Flutter Web (Release)
-        run: flutter build web --release
-
-      - name: 📄 Adjust base href in index.html
-        run: |
-          # Этот шаг гарантирует, что base href установлен корректно для GitHub Pages,
-          # где URL имеет формат: https://<username>.github.io/<repository-name>/
-          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)
-          # Заменяем <base href="/"> на <base href="/<repository-name>/">
-          sed -i 's|<base href="/">|<base href="/'"$REPO_NAME"'/">|' build/web/index.html
-
-      - name: 🚀 Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/web
-          publish_branch: gh-pages
-          # Включаем force_orphan, чтобы очищать старые файлы
-          force_orphan: true
-          # Устанавливаем commit message
-          commit_message: Deploy Flutter Web build from GitHub Actions
+#name: Flutter Web Deploy to GitHub Pages
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#  workflow_dispatch:
+#
+#jobs:
+#  build_and_deploy:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: 📦 Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: ⚙️ Setup Flutter SDK
+#        uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: '3.35.6'
+#
+#      - name: 🖥️ Build Flutter Web (Release)
+#        run: flutter build web --release
+#
+#      - name: 📄 Adjust base href in index.html
+#        run: |
+#          # Этот шаг гарантирует, что base href установлен корректно для GitHub Pages,
+#          # где URL имеет формат: https://<username>.github.io/<repository-name>/
+#          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)
+#          # Заменяем <base href="/"> на <base href="/<repository-name>/">
+#          sed -i 's|<base href="/">|<base href="/'"$REPO_NAME"'/">|' build/web/index.html
+#
+#      - name: 🚀 Deploy to GitHub Pages
+#        uses: peaceiris/actions-gh-pages@v4
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          publish_dir: build/web
+#          publish_branch: gh-pages
+#          # Включаем force_orphan, чтобы очищать старые файлы
+#          force_orphan: true
+#          # Устанавливаем commit message
+#          commit_message: Deploy Flutter Web build from GitHub Actions
