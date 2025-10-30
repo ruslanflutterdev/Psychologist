@@ -39,7 +39,7 @@ class PsychologistBody extends StatelessWidget {
                 stream: _streamChildren(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting &&
-                      snapshot.data == null) {
+                      !snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
