@@ -3,10 +3,8 @@ name: Flutter CI / CD
 on:
   push:
     branches:
-      - main # [!code change] Обеспечиваем деплой только из ветки main
-  pull_request:
-    branches:
       - main
+
 
 defaults:
   run:
