@@ -1,0 +1,107 @@
+# Использование кеша для ускорения 'flutter pub get'
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pub-cache/
+  policy: pull-push
+
+# Определяем последовательность выполнения этапов (stages)
+stages:
+  - build
+  - test
+  - deploy_staging
+  - deploy_production
+
+# Общие переменные
+variables:
+  FLUTTER_BASE_HREF: / # <-- ПРОВЕРЬТЕ ЭТУ СТРОКУ
+  BUILD_DIR: build/web
+  PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
+
+# ====================
+# ШАБЛОН ДЛЯ FLUTTER CI
+# ====================
+.flutter_template:
+  # Используем готовый Docker-образ с предустановленным Flutter
+  image: cirrusci/flutter:latest
+  before_script:
+    - export PATH="$PATH:$PUB_CACHE/bin"
+    - flutter pub get
+
+# ====================
+# 1. BUILD (Сборка артефакта)
+# ====================
+build_web:
+  stage: build
+  extends: .flutter_template
+  script:
+    - flutter build web --release --base-href $FLUTTER_BASE_HREF
+  artifacts:
+    paths:
+      - $BUILD_DIR
+    expire_in: 1 week
+
+# ====================
+# 2. TEST (Тестирование)
+# ====================
+run_tests:
+  stage: test
+  extends: .flutter_template
+  script:
+    - flutter test --coverage
+  allow_failure: true
+
+# ====================================
+# 3. DEPLOYMENT BASE (Шаблон для развертывания)
+# ====================================
+.deploy_base:
+  # Используем легкий образ с предустановленными SSH и rsync
+  image: alpine/helm:3.11.0
+  before_script:
+    - apk update && apk add openssh-client rsync
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  dependencies:
+    - build_web
+
+# ====================
+# 4. DEPLOY TO SITE 1 (STAGING/TEST)
+# ====================
+deploy_staging:
+  stage: deploy_staging
+  extends: .deploy_base
+  environment:
+    name: staging
+    url: http://${DEPLOY_HOST}/${STAGING_PATH}
+  script:
+    - echo "Deploying to Staging site at $DEPLOY_HOST:$STAGING_PATH"
+    - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $STAGING_PATH"
+    # Использует переменные DEPLOY_USER, DEPLOY_HOST, STAGING_PATH
+    - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$STAGING_PATH
+    - echo "Staging deployment complete."
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+
+# ====================
+# 5. DEPLOY TO SITE 2 (PRODUCTION)
+# ====================
+deploy_production:
+  stage: deploy_production
+  extends: .deploy_base
+  environment:
+    name: production
+    url: http://${DEPLOY_HOST}/${PRODUCTION_PATH}
+  script:
+    - echo "Deploying to Production site at $DEPLOY_HOST:$PRODUCTION_PATH"
+    - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $PRODUCTION_PATH"
+    # Использует защищенную переменную PRODUCTION_PATH
+    - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$PRODUCTION_PATH
+    - echo "Production deployment complete."
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual # Ожидает ручного запуска
+      allow_failure: false
