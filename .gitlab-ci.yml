@@ -58,12 +58,11 @@ run_tests:
   before_script:
     - apk update && apk add openssh-client rsync
     - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - echo "$SSH_KEY_BASE64" | base64 -d > deploy_key.pem
+    - chmod 600 deploy_key.pem
+    - ssh-add deploy_key.pem
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-  dependencies:
-    - build_web
 
 # ====================
 # 4. DEPLOY TO SITE 1 (STAGING/TEST)
