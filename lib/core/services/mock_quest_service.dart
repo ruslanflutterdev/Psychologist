@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:heros_journey/core/services/quest_service.dart';
 
 class MockQuestService implements QuestService {
@@ -17,6 +18,6 @@ class MockQuestService implements QuestService {
       'childId': childId,
       'assignedAt': DateTime.now().toIso8601String(),
     };
-    print('MOCK POST /assign-quest payload=$payload');
+    debugPrint('MOCK POST /assign-quest payload=$payload');
   }
 }

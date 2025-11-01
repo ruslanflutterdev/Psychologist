@@ -9,7 +9,7 @@ import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.
 import 'package:heros_journey/features/auth_reset/view/screens/reset_screen.dart';
 import 'package:heros_journey/features/auth_reset/viewmodel/reset_bloc.dart';
 
-class PsychWebApp extends StatelessWidget {
+class PsychWebApp extends StatefulWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final bool startAtReset;
   final SessionCubit? sessionCubit;
@@ -22,15 +22,26 @@ class PsychWebApp extends StatelessWidget {
   });
 
   @override
+  State<PsychWebApp> createState() => _PsychWebAppState();
+}
+
+class _PsychWebAppState extends State<PsychWebApp> {
+  @override
+  void dispose() {
+    ServiceRegistry.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider<SessionCubit>(
-      create: (_) => sessionCubit ?? SessionCubit(),
+      create: (_) => widget.sessionCubit ?? SessionCubit(),
       child: MaterialApp(
-        navigatorKey: navigatorKey,
+        navigatorKey: widget.navigatorKey,
         title: 'PsyWell – Psychologist Web',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        home: startAtReset
+        home: widget.startAtReset
             ? BlocProvider(
                 create: (_) => ResetBloc(auth: ServiceRegistry.auth),
                 child: const ResetScreen(),
