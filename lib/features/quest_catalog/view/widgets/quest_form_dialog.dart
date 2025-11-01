@@ -71,7 +71,7 @@ class _QuestFormDialogState extends State<QuestFormDialog> {
       );
 
       await widget.onSave(payload);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -122,8 +122,8 @@ class _QuestFormDialogState extends State<QuestFormDialog> {
                   items: QuestType.values
                       .map(
                         (t) =>
-                            DropdownMenuItem(value: t, child: Text(t.uiLabel)),
-                      )
+                        DropdownMenuItem(value: t, child: Text(t.uiLabel)),
+                  )
                       .toList(),
                   onChanged: (t) => setState(() => _selectedType = t),
                   validator: validateQuestType,
@@ -149,10 +149,10 @@ class _QuestFormDialogState extends State<QuestFormDialog> {
           onPressed: _isSaving ? null : _submit,
           child: _isSaving
               ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
               : Text(isEditing ? 'Сохранить изменения' : 'Создать'),
         ),
       ],

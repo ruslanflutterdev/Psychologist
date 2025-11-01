@@ -9,6 +9,31 @@ class CompletedQuestTile extends StatelessWidget {
 
   const CompletedQuestTile({super.key, required this.item});
 
+  IconData _getIconData(String name) {
+    switch (name.toLowerCase()) {
+      case 'star':
+        return Icons.star;
+      case 'bolt':
+        return Icons.bolt;
+      case 'school':
+        return Icons.school;
+      case 'emoji_events':
+        return Icons.emoji_events;
+      case 'thumb_up':
+        return Icons.thumb_up;
+      case 'verified':
+        return Icons.verified;
+      case 'psychology':
+        return Icons.psychology;
+      case 'favorite':
+        return Icons.favorite;
+      case 'auto_awesome':
+        return Icons.auto_awesome;
+      default:
+        return Icons.star;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -65,6 +90,27 @@ class CompletedQuestTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  if (item.achievement != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getIconData(item.achievement!.iconPath),
+                            size: 16,
+                            color: cs.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Получена ачивка: ${item.achievement!.title}',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   if (item.childComment != null &&
                       item.childComment!.isNotEmpty)
                     Text(

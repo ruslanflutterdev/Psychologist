@@ -182,6 +182,13 @@ class SupabaseChildQuestsService implements ChildQuestsService {
       childComment: row.childComment,
       photoUrl: row.photoUrl,
       completedAt: row.completedAt,
+      achievement: row.achievementTitle != null
+          ? AchievementInfo(
+        id: row.achievementId!,
+        title: row.achievementTitle!,
+        iconPath: row.achievementIconPath ?? 'star',
+      )
+          : null,
     );
   }
 
@@ -256,6 +263,9 @@ class _ChildQuestRow {
   final DateTime? completedAt;
   final String? title;
   final String? sphere;
+  final String? achievementId;
+  final String? achievementTitle;
+  final String? achievementIconPath;
 
   _ChildQuestRow({
     required this.id,
@@ -268,10 +278,17 @@ class _ChildQuestRow {
     this.completedAt,
     this.title,
     this.sphere,
+    this.achievementId,
+    this.achievementTitle,
+    this.achievementIconPath,
   });
 
   factory _ChildQuestRow.fromMap(Map<String, dynamic> r) {
     final q = (r['quests'] as Map<String, dynamic>?) ?? const {};
+    final achCatalog = (q['achievements_catalog'] as List<dynamic>?) ?? [];
+    final ach = achCatalog.isNotEmpty
+        ? achCatalog.cast<Map<String, dynamic>>().first
+        : null;
     return _ChildQuestRow(
       id: r['id'].toString(),
       childId: r['child_id'].toString(),
@@ -285,6 +302,9 @@ class _ChildQuestRow {
           : null,
       title: (q['title'] as String?)?.trim(),
       sphere: (q['sphere'] as String?)?.trim(),
+      achievementId: ach?['id']?.toString(),
+      achievementTitle: ach?['title'] as String?,
+      achievementIconPath: ach?['icon_path'] as String?,
     );
   }
 }

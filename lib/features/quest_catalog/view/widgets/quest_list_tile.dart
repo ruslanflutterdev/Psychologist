@@ -7,6 +7,7 @@ class QuestListTile extends StatelessWidget {
   final bool isEditable;
   final VoidCallback onEdit;
   final VoidCallback onToggleActive;
+  final VoidCallback onDelete;
   final String currentUserId;
 
   const QuestListTile({
@@ -15,6 +16,7 @@ class QuestListTile extends StatelessWidget {
     required this.isEditable,
     required this.onEdit,
     required this.onToggleActive,
+    required this.onDelete,
     required this.currentUserId,
   });
 
@@ -37,67 +39,82 @@ class QuestListTile extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-      color: isActive ? null : cs.surfaceContainerLowest,
-      child: ListTile(
-        leading: Icon(
-          isActive ? Icons.check_circle_outline : Icons.disabled_visible,
-          color: isActive ? cs.primary : cs.outline,
-        ),
-        title: Text(
-          quest.title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+      child: InkWell(
+        onTap: isEditable ? onEdit : null,
+        child: ListTile(
+          leading: Icon(
+            isActive ? Icons.check_circle_outline : Icons.disabled_visible,
+            color: isActive ? cs.primary : cs.outline,
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('XP: ${quest.xp} | Сфера: ${quest.type.uiLabel}'),
-            Text(
-              quest.description.isNotEmpty ? quest.description : 'Нет описания',
-              style: theme.textTheme.bodySmall,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          title: Text(
+            quest.title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextButton(
-              onPressed: () => _openAssignDialog(context),
-              child: const Text('НАЗНАЧИТЬ'),
-            ),
-            Text(
-              'Обновлено: ${_formatUpdatedAt(quest.updatedAt)}',
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(width: 12),
-            if (isEditable)
-              IconButton(
-                icon: const Icon(Icons.edit, size: 20),
-                tooltip: 'Редактировать',
-                onPressed: onEdit,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('XP: ${quest.xp} | Сфера: ${quest.type.uiLabel}'),
+              Text(
+                quest.description.isNotEmpty
+                    ? quest.description
+                    : 'Нет описания',
+                style: theme.textTheme.bodySmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            if (isEditable)
-              IconButton(
-                icon: Icon(
-                  isActive ? Icons.toggle_on : Icons.toggle_off,
-                  color: isActive ? cs.primary : cs.outline,
-                  size: 28,
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                onPressed: () => _openAssignDialog(context),
+                child: const Text('НАЗНАЧИТЬ'),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Обновлено: ${_formatUpdatedAt(quest.updatedAt)}',
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(width: 12),
+              if (isEditable)
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 20),
+                  tooltip: 'Редактировать',
+                  onPressed: onEdit,
                 ),
-                tooltip: isActive ? 'Деактивировать' : 'Активировать',
-                onPressed: onToggleActive,
-              ),
-            if (quest.createdBy != 'SYSTEM')
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  quest.createdBy == currentUserId ? 'Мой' : 'Чужой',
-                  style: theme.textTheme.labelSmall,
+              if (isEditable)
+                IconButton(
+                  icon: Icon(
+                    isActive ? Icons.toggle_on : Icons.toggle_off,
+                    color: isActive ? cs.primary : cs.outline,
+                    size: 28,
+                  ),
+                  tooltip: isActive ? 'Деактивировать' : 'Активировать',
+                  onPressed: onToggleActive,
                 ),
-              ),
-          ],
+              if (isEditable)
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: theme.colorScheme.error,
+                  ),
+                  tooltip: 'Удалить квест',
+                  onPressed: onDelete,
+                ),
+              if (quest.createdBy != 'SYSTEM')
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Text(
+                    quest.createdBy == currentUserId ? 'Мой' : 'Чужой',
+                    style: theme.textTheme.labelSmall,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

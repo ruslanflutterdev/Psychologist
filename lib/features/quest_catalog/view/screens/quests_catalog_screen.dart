@@ -72,6 +72,7 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
         active: !q.active,
         toggledBy: _currentUserId,
       );
+      await _loadQuests();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +83,7 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
   }
 
   void _openCreateDialog() async {
-    await showDialog<void>(
+    final bool? result = await showDialog<bool>(
       context: context,
       builder: (_) => QuestFormDialog(
         onSave: (data) async {
@@ -96,10 +97,13 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
         },
       ),
     );
+    if (result == true) {
+      await _loadQuests();
+    }
   }
 
   void _openEditDialog(Quest quest) async {
-    await showDialog<void>(
+    final bool? result = await showDialog<bool>(
       context: context,
       builder: (_) => QuestFormDialog(
         initialQuest: quest,
@@ -115,6 +119,9 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
         },
       ),
     );
+    if (result == true) {
+      await _loadQuests();
+    }
   }
 
   void _handleFilterChange({
@@ -136,6 +143,48 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
     }
   }
 
+  void _deleteQuest(Quest q) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Удалить квест?'),
+        content: Text('Вы уверены, что хотите удалить квест "${q.title}"? Это действие необратимо.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ServiceRegistry.questCatalog.deleteQuest(
+          id: q.id,
+          deletedBy: _currentUserId,
+        );
+        await _loadQuests();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Квест "${q.title}" удален.')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ошибка удаления: $e')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,10 +200,10 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
             onPressed: _isLoading ? null : _loadQuests,
             icon: _isLoading
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
                 : const Icon(Icons.refresh),
             tooltip: 'Обновить список квестов',
           ),
@@ -180,6 +229,7 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
                 currentUserId: _currentUserId,
                 onEdit: _openEditDialog,
                 onToggleActive: _toggleActive,
+                onDelete: _deleteQuest,
               ),
             ],
           ),
