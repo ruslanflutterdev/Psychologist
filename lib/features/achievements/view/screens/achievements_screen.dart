@@ -44,9 +44,17 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         await _handleAttachToQuest(achievement);
       }
     } on AuthException catch (e) {
+      final isAlreadyAttached = e.code == 'ALREADY_ATTACHED';
+      final isQuestAttached = e.code == 'QUEST_ALREADY_ATTACHED';
+      String message = e.message;
+
+      if (isAlreadyAttached || isQuestAttached) {
+        message = '${e.message}. Сначала отвяжите её.';
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
+          SnackBar(content: Text(message)),
         );
       }
     } catch (e) {
@@ -69,28 +77,18 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     );
 
     if (selectedQuest != null) {
-      try {
-        await _service.attachToQuest(
-          achievementId: achievement.id,
-          questId: selectedQuest.id,
+      await _service.attachToQuest(
+        achievementId: achievement.id,
+        questId: selectedQuest.id,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Ачивка привязана к квесту "${selectedQuest.title}".',
+            ),
+          ),
         );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Ачивка привязана к квесту "${selectedQuest.title}".',
-              ),
-            ),
-          );
-        }
-      } on AuthException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${e.message}. Сначала отвяжите её.'),
-            ),
-          );
-        }
       }
     }
   }

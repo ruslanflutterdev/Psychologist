@@ -151,27 +151,57 @@ class SupabaseAchievementService implements AchievementService {
     required String achievementId,
     required String questId,
   }) async {
-    final ach = await _supabase
-        .from(_tableName)
-        .select('quest_id')
-        .eq('id', achievementId)
-        .single();
-    if (ach['quest_id'] != null) {
+    try {
+      final ach = await _supabase
+          .from(_tableName)
+          .select('quest_id')
+          .eq('id', achievementId)
+          .single();
+      if (ach['quest_id'] != null) {
+        throw AuthException(
+          'ALREADY_ATTACHED',
+          'Эта ачивка уже привязана к другому квесту.',
+        );
+      }
+
+      await _supabase.from(_tableName).update({
+        'quest_id': questId,
+      }).eq('id', achievementId);
+
+      await _refetchAndStream();
+    } on AuthException {
+      rethrow;
+    } on sb.PostgrestException catch (e) {
+      if (e.code == '23505') {
+        throw AuthException(
+          'QUEST_ALREADY_ATTACHED',
+          'Этот квест уже привязан к другой ачивке.',
+        );
+      }
+      throw AuthException('DB_ERROR', 'Ошибка привязки ачивки: ${e.message}');
+    } catch (e) {
       throw AuthException(
-        'ALREADY_ATTACHED',
-        'Эта ачивка уже привязана к другому квесту.',
+        'UNKNOWN',
+        'Неизвестная ошибка при привязке ачивки: ${e.toString()}',
       );
     }
-
-    await _supabase.from(_tableName).update({
-      'quest_id': questId,
-    }).eq('id', achievementId);
   }
 
   @override
   Future<void> detachFromQuest({required String achievementId}) async {
-    await _supabase.from(_tableName).update({
-      'quest_id': null,
-    }).eq('id', achievementId);
+    try {
+      await _supabase.from(_tableName).update({
+        'quest_id': null,
+      }).eq('id', achievementId);
+
+      await _refetchAndStream();
+    } on sb.PostgrestException catch (e) {
+      throw AuthException('DB_ERROR', 'Ошибка отвязки ачивки: ${e.message}');
+    } catch (e) {
+      throw AuthException(
+        'UNKNOWN',
+        'Неизвестная ошибка при отвязке ачивки: ${e.toString()}',
+      );
+    }
   }
 }
