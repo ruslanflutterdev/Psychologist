@@ -54,8 +54,7 @@ run_tests:
 # 3. DEPLOYMENT BASE (Шаблон для развертывания)
 # ====================================
 .deploy_base:
-  # Используем легкий образ с предустановленными SSH и rsync
-  image: alpine/helm:3.11.0
+  image: alpine:3.19
   before_script:
     - apk update && apk add openssh-client rsync
     - eval $(ssh-agent -s)
