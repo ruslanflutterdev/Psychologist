@@ -17,6 +17,8 @@ extension QuestTypeX on QuestType {
   }
 }
 
+
+
 class Quest {
   final String id;
   final String title;
@@ -61,6 +63,19 @@ class Quest {
 
 enum ChildQuestStatus { assigned, completed }
 
+
+class AchievementInfo {
+  final String id;
+  final String title;
+  final String iconPath;
+
+  const AchievementInfo({
+    required this.id,
+    required this.title,
+    required this.iconPath,
+  });
+}
+
 class ChildQuest {
   final String id;
   final String childId;
@@ -69,6 +84,7 @@ class ChildQuest {
   final String? childComment;
   final String? photoUrl;
   final DateTime? completedAt;
+  final AchievementInfo? achievement;
 
   const ChildQuest({
     required this.id,
@@ -78,6 +94,7 @@ class ChildQuest {
     this.childComment,
     this.photoUrl,
     this.completedAt,
+    this.achievement,
   });
 
   ChildQuest copyWith({
@@ -94,6 +111,7 @@ class ChildQuest {
       childComment: childComment ?? this.childComment,
       photoUrl: photoUrl ?? this.photoUrl,
       completedAt: completedAt ?? this.completedAt,
+      achievement: achievement,
     );
   }
 }

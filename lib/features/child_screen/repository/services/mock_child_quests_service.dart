@@ -36,6 +36,12 @@ class MockChildQuestsService implements ChildQuestsService {
         childComment: 'Мне понравилось писать о своих чувствах.',
         photoUrl: 'https://picsum.photos/id/1/400/300',
         completedAt: DateTime.now().subtract(const Duration(days: 2)),
+        achievement: const AchievementInfo(
+          id: 'ach-1',
+          title: 'Эмоциональный интеллект',
+          iconPath: 'star',
+        ),
+        // [!code addition:end]
       ),
     ];
     pushUpdates();
