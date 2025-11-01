@@ -22,8 +22,7 @@ variables:
 # ШАБЛОН ДЛЯ FLUTTER CI
 # ====================
 .flutter_template:
-  # [!code change] Используем стабильный публичный образ с Docker Hub
-  image: mobiledevops/flutter-sdk-image:3.19.4
+  image: instrumentisto/flutter:3.35
   before_script:
     - export PATH="$PATH:$PUB_CACHE/bin"
     - flutter pub get
