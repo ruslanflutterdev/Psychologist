@@ -23,7 +23,7 @@ variables:
 # ====================
 .flutter_template:
   # Используем готовый Docker-образ с предустановленным Flutter
-  image: cirrusci/flutter:latest
+  image: subosito/flutter:3.22.2  # Используем стабильный образ с Dart 3.x
   before_script:
     - export PATH="$PATH:$PUB_CACHE/bin"
     - flutter pub get
