@@ -60,13 +60,12 @@ run_tests:
   before_script:
     - apk update && apk add openssh-client rsync # Устанавливаем необходимые утилиты
     - eval $(ssh-agent -s)
-    # Добавление SSH-ключа из переменной GitLab (SSH_PRIVATE_KEY)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   dependencies:
-    - build_web # Зависим от успешно собранного артефакта
+    - build_web
     
 # ====================
 # 4. DEPLOY TO SITE 1 (STAGING/TEST)
@@ -80,12 +79,11 @@ deploy_staging:
   script:
     - echo "Deploying to Staging site at $DEPLOY_HOST:$STAGING_PATH"
     - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $STAGING_PATH"
-    # Копирование файлов в путь STAGING_PATH
     - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$STAGING_PATH
     - echo "Staging deployment complete."
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      when: on_success # АВТОМАТИЧЕСКИЙ деплой при успешной сборке
+      when: on_success
 
 # ====================
 # 5. DEPLOY TO SITE 2 (PRODUCTION)
@@ -99,10 +97,9 @@ deploy_production:
   script:
     - echo "Deploying to Production site at $DEPLOY_HOST:$PRODUCTION_PATH"
     - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $PRODUCTION_PATH"
-    # Копирование файлов в защищенный путь PRODUCTION_PATH
     - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$PRODUCTION_PATH
     - echo "Production deployment complete."
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual # РУЧНОЙ деплой (нажать кнопку)
+      when: manual
       allow_failure: false
