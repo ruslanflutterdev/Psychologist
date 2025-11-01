@@ -155,4 +155,12 @@ class SupabaseQuestCatalogService implements QuestCatalogService {
   }) async {
     await _supabase.from('quests').update({'active': active}).eq('id', id);
   }
+
+  @override
+  Future<void> deleteQuest({
+    required String id,
+    required String deletedBy,
+  }) async {
+    await _supabase.from('quests').delete().eq('id', id);
+  }
 }
