@@ -22,8 +22,8 @@ variables:
 # ШАБЛОН ДЛЯ FLUTTER CI
 # ====================
 .flutter_template:
-  # Используем готовый Docker-образ с предустановленным Flutter
-  image: subosito/flutter:3.22.2  # Используем стабильный образ с Dart 3.x
+  # [!code change] Используем проверенный образ с Dart 3.x из официального реестра
+  image: registry.gitlab.com/mobile-devops/flutter-build-images:latest-stable
   before_script:
     - export PATH="$PATH:$PUB_CACHE/bin"
     - flutter pub get
