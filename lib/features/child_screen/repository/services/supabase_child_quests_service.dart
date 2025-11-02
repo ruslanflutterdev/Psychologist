@@ -11,20 +11,36 @@ class SupabaseChildQuestsService implements ChildQuestsService {
 
   SupabaseChildQuestsService(this._supabase);
 
+  bool _isQuestInFilter(ChildQuest quest, QuestTimeFilter? filter) {
+    if (filter == null || !filter.isActive) return true;
+    if (quest.status != ChildQuestStatus.completed) return true;
+    final questDate = quest.completedAt;
+    if (questDate == null) return false;
+    final from = filter.dateFrom?.subtract(const Duration(milliseconds: 1));
+    final to = filter.dateTo
+        ?.add(const Duration(days: 1))
+        .subtract(const Duration(milliseconds: 1));
+
+    final isAfterFrom = from == null || questDate.isAfter(from);
+    final isBeforeTo = to == null || questDate.isBefore(to);
+
+    return isAfterFrom && isBeforeTo;
+  }
+
   @override
   Stream<List<ChildQuest>> getAssigned(
-    String childId, {
-    QuestTimeFilter? filter,
-  }) {
-    return Stream.fromFuture(_fetchAssigned(childId: childId));
+      String childId, {
+        QuestTimeFilter? filter,
+      }) {
+    return Stream.fromFuture(_fetchAssigned(childId: childId, filter: filter));
   }
 
   @override
   Stream<List<ChildQuest>> getCompleted(
-    String childId, {
-    QuestTimeFilter? filter,
-  }) {
-    return Stream.fromFuture(_fetchCompleted(childId: childId));
+      String childId, {
+        QuestTimeFilter? filter,
+      }) {
+    return Stream.fromFuture(_fetchCompleted(childId: childId, filter: filter));
   }
 
   @override
@@ -84,11 +100,11 @@ class SupabaseChildQuestsService implements ChildQuestsService {
       final updated = await _supabase
           .from('child_quests')
           .update({
-            'status': st,
-            'child_comment': comment,
-            'photo_url': photoUrl,
-            'completed_at': completedAt.toIso8601String(),
-          })
+        'status': st,
+        'child_comment': comment,
+        'photo_url': photoUrl,
+        'completed_at': completedAt.toIso8601String(),
+      })
           .eq('id', assignedId)
           .eq('child_id', childId)
           .select('id')
@@ -126,20 +142,28 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     }
   }
 
-  Future<List<ChildQuest>> _fetchAssigned({required String childId}) async {
+  Future<List<ChildQuest>> _fetchAssigned({
+    required String childId,
+    QuestTimeFilter? filter,
+  }) async {
     final rows = await _selectRows(childId);
-    return rows
+    final assignedQuests = rows
         .where((r) => _isAssignedStatusRaw(r.rawStatus))
         .map(_mapRowToChildQuest)
         .toList();
+    return assignedQuests.where((q) => _isQuestInFilter(q, filter)).toList();
   }
 
-  Future<List<ChildQuest>> _fetchCompleted({required String childId}) async {
+  Future<List<ChildQuest>> _fetchCompleted({
+    required String childId,
+    QuestTimeFilter? filter,
+  }) async {
     final rows = await _selectRows(childId);
-    return rows
+    final completedQuests = rows
         .where((r) => _isCompletedStatusRaw(r.rawStatus))
         .map(_mapRowToChildQuest)
         .toList();
+    return completedQuests.where((q) => _isQuestInFilter(q, filter)).toList();
   }
 
   Future<List<_ChildQuestRow>> _selectRows(String childId) async {
@@ -247,7 +271,7 @@ class SupabaseChildQuestsService implements ChildQuestsService {
   }
 
   final RegExp _uuidRe = RegExp(
-    r'^[0-9a-fA-F]{8}\-?[0-9a-fA-F]{4}\-?[1-5][0-9a-fA-F]{3}\-?[89abAB][0-9a-fA-F]{3}\-?[0-9a-fA-F]{12}$',
+    r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[1-5][0-9a-fA-F]{3}-?[89abAB][0-9a-fA-F]{3}-?[0-9a-fA-F]{12}$',
   );
   bool _isUuid(String? s) => s != null && _uuidRe.hasMatch(s);
 }
