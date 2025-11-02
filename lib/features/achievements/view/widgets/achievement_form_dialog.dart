@@ -118,9 +118,9 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Иконка ачивки',
-                    prefixIcon: Icon(availableIcons[_selectedIconName]),
+
                   ),
                   initialValue: _selectedIconName,
                   items: availableIcons.keys.map((name) {

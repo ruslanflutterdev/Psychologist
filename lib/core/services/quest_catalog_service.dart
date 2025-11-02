@@ -28,4 +28,9 @@ abstract class QuestCatalogService {
     required bool active,
     required String toggledBy,
   });
+
+  Future<void> deleteQuest({
+    required String id,
+    required String deletedBy,
+  });
 }
