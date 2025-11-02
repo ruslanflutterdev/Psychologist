@@ -42,16 +42,23 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
     await _questsSubscription?.cancel();
 
     try {
-      final loadedQuests = await ServiceRegistry.questCatalog.getAll();
-      if (mounted) {
-        setState(() => _quests = loadedQuests);
-      }
-
       _questsSubscription = ServiceRegistry.questCatalog
           .getQuests(filter: _filter)
           .listen((list) {
         if (mounted) {
-          setState(() => _quests = list);
+          setState(() {
+            _quests = list;
+            if (_isLoading) {
+              _isLoading = false;
+            }
+          });
+        }
+      }, onError: (Object e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ошибка загрузки: $e')),
+          );
+          setState(() => _isLoading = false);
         }
       });
     } catch (e) {
@@ -61,7 +68,7 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted && _isLoading) setState(() => _isLoading = false);
     }
   }
 
@@ -81,6 +88,48 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
       }
     }
   }
+
+  void _deleteQuest(Quest q) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Удалить квест?'),
+        content: Text('Вы уверены, что хотите удалить квест "${q.title}"? Это действие необратимо.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await ServiceRegistry.questCatalog.deleteQuest(
+          id: q.id,
+          deletedBy: _currentUserId,
+        );
+        await _loadQuests();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Квест "${q.title}" удален.')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ошибка удаления: $e')),
+          );
+        }
+      }
+    }
+  }
+
 
   void _openCreateDialog() async {
     final bool? result = await showDialog<bool>(
@@ -140,48 +189,6 @@ class _QuestsCatalogScreenState extends State<QuestsCatalogScreen> {
         newFilter.onlyActive != _filter.onlyActive) {
       setState(() => _filter = newFilter);
       _loadQuests();
-    }
-  }
-
-  void _deleteQuest(Quest q) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Удалить квест?'),
-        content: Text('Вы уверены, что хотите удалить квест "${q.title}"? Это действие необратимо.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Отмена'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(ctx).colorScheme.error),
-            child: const Text('Удалить'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await ServiceRegistry.questCatalog.deleteQuest(
-          id: q.id,
-          deletedBy: _currentUserId,
-        );
-        await _loadQuests();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Квест "${q.title}" удален.')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ошибка удаления: $e')),
-          );
-        }
-      }
     }
   }
 
