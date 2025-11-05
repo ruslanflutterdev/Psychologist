@@ -17,10 +17,6 @@ class CompletedQuestDetailsDialog extends StatelessWidget {
     if (item.photoUrl == null || item.photoUrl!.isEmpty) {
       return const SizedBox.shrink();
     }
-    // [!code change:start]
-    // Оборачиваем в SizedBox с width: double.infinity, чтобы гарантировать,
-    // что ClipRRect занимает всю доступную ширину диалога (которая ограничена).
-    // Это устраняет ошибку "input.isFinite is not true".
     return SizedBox(
       width: double.infinity,
       height: 200,
@@ -29,7 +25,6 @@ class CompletedQuestDetailsDialog extends StatelessWidget {
         child: Image.network(
           item.photoUrl!,
           fit: BoxFit.cover,
-          // Удалены явные width/height из Image.network, так как они заданы родителем SizedBox
           errorBuilder: (context, error, stackTrace) => Container(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: const Center(child: Text('Не удалось загрузить фото')),
@@ -37,7 +32,6 @@ class CompletedQuestDetailsDialog extends StatelessWidget {
         ),
       ),
     );
-    // [!code change:end]
   }
 
   @override
