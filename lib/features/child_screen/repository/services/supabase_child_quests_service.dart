@@ -170,7 +170,7 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     try {
       final select =
           "id, child_id, quest_id, status, child_comment, photo_url, completed_at, "
-          "quests(id, title, sphere, xp)";
+          "quests(id, title, description, xp, sphere, updated_at)";
       final rows = await _supabase
           .from('child_quests')
           .select(select)
@@ -191,9 +191,11 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     final quest = Quest(
       id: (row.questIdFromJoin ?? row.questId ?? row.id).toString(),
       title: row.title ?? '',
+      description: row.description ?? '',
       type: _mapSphereToType(row.sphere ?? ''),
+      xp: row.xp ?? 0,
       createdBy: '',
-      updatedAt: DateTime.now(),
+      updatedAt: row.questUpdatedAt,
     );
 
     final status = _mapStatus(row.rawStatus);
@@ -286,7 +288,10 @@ class _ChildQuestRow {
   final String? photoUrl;
   final DateTime? completedAt;
   final String? title;
+  final String? description;
+  final int? xp;
   final String? sphere;
+  final DateTime? questUpdatedAt;
   final String? achievementId;
   final String? achievementTitle;
   final String? achievementIconPath;
@@ -301,7 +306,10 @@ class _ChildQuestRow {
     this.photoUrl,
     this.completedAt,
     this.title,
+    this.description,
+    this.xp,
     this.sphere,
+    this.questUpdatedAt,
     this.achievementId,
     this.achievementTitle,
     this.achievementIconPath,
@@ -325,7 +333,12 @@ class _ChildQuestRow {
           ? DateTime.tryParse(r['completed_at'].toString())
           : null,
       title: (q['title'] as String?)?.trim(),
+      description: (q['description'] as String?)?.trim(),
+      xp: q['xp'] as int?,
       sphere: (q['sphere'] as String?)?.trim(),
+      questUpdatedAt: q['updated_at'] != null
+          ? DateTime.tryParse(q['updated_at'].toString())
+          : null,
       achievementId: ach?['id']?.toString(),
       achievementTitle: ach?['title'] as String?,
       achievementIconPath: ach?['icon_path'] as String?,
