@@ -11,20 +11,36 @@ class SupabaseChildQuestsService implements ChildQuestsService {
 
   SupabaseChildQuestsService(this._supabase);
 
+  bool _isQuestInFilter(ChildQuest quest, QuestTimeFilter? filter) {
+    if (filter == null || !filter.isActive) return true;
+    if (quest.status != ChildQuestStatus.completed) return true;
+    final questDate = quest.completedAt;
+    if (questDate == null) return false;
+    final from = filter.dateFrom?.subtract(const Duration(milliseconds: 1));
+    final to = filter.dateTo
+        ?.add(const Duration(days: 1))
+        .subtract(const Duration(milliseconds: 1));
+
+    final isAfterFrom = from == null || questDate.isAfter(from);
+    final isBeforeTo = to == null || questDate.isBefore(to);
+
+    return isAfterFrom && isBeforeTo;
+  }
+
   @override
   Stream<List<ChildQuest>> getAssigned(
-    String childId, {
-    QuestTimeFilter? filter,
-  }) {
-    return Stream.fromFuture(_fetchAssigned(childId: childId));
+      String childId, {
+        QuestTimeFilter? filter,
+      }) {
+    return Stream.fromFuture(_fetchAssigned(childId: childId, filter: filter));
   }
 
   @override
   Stream<List<ChildQuest>> getCompleted(
-    String childId, {
-    QuestTimeFilter? filter,
-  }) {
-    return Stream.fromFuture(_fetchCompleted(childId: childId));
+      String childId, {
+        QuestTimeFilter? filter,
+      }) {
+    return Stream.fromFuture(_fetchCompleted(childId: childId, filter: filter));
   }
 
   @override
@@ -84,11 +100,11 @@ class SupabaseChildQuestsService implements ChildQuestsService {
       final updated = await _supabase
           .from('child_quests')
           .update({
-            'status': st,
-            'child_comment': comment,
-            'photo_url': photoUrl,
-            'completed_at': completedAt.toIso8601String(),
-          })
+        'status': st,
+        'child_comment': comment,
+        'photo_url': photoUrl,
+        'completed_at': completedAt.toIso8601String(),
+      })
           .eq('id', assignedId)
           .eq('child_id', childId)
           .select('id')
@@ -126,27 +142,35 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     }
   }
 
-  Future<List<ChildQuest>> _fetchAssigned({required String childId}) async {
+  Future<List<ChildQuest>> _fetchAssigned({
+    required String childId,
+    QuestTimeFilter? filter,
+  }) async {
     final rows = await _selectRows(childId);
-    return rows
+    final assignedQuests = rows
         .where((r) => _isAssignedStatusRaw(r.rawStatus))
         .map(_mapRowToChildQuest)
         .toList();
+    return assignedQuests.where((q) => _isQuestInFilter(q, filter)).toList();
   }
 
-  Future<List<ChildQuest>> _fetchCompleted({required String childId}) async {
+  Future<List<ChildQuest>> _fetchCompleted({
+    required String childId,
+    QuestTimeFilter? filter,
+  }) async {
     final rows = await _selectRows(childId);
-    return rows
+    final completedQuests = rows
         .where((r) => _isCompletedStatusRaw(r.rawStatus))
         .map(_mapRowToChildQuest)
         .toList();
+    return completedQuests.where((q) => _isQuestInFilter(q, filter)).toList();
   }
 
   Future<List<_ChildQuestRow>> _selectRows(String childId) async {
     try {
       final select =
           "id, child_id, quest_id, status, child_comment, photo_url, completed_at, "
-          "quests(id, title, sphere, xp)";
+          "quests(id, title, description, xp, sphere, updated_at)";
       final rows = await _supabase
           .from('child_quests')
           .select(select)
@@ -167,9 +191,11 @@ class SupabaseChildQuestsService implements ChildQuestsService {
     final quest = Quest(
       id: (row.questIdFromJoin ?? row.questId ?? row.id).toString(),
       title: row.title ?? '',
+      description: row.description ?? '',
       type: _mapSphereToType(row.sphere ?? ''),
+      xp: row.xp ?? 0,
       createdBy: '',
-      updatedAt: DateTime.now(),
+      updatedAt: row.questUpdatedAt,
     );
 
     final status = _mapStatus(row.rawStatus);
@@ -182,6 +208,13 @@ class SupabaseChildQuestsService implements ChildQuestsService {
       childComment: row.childComment,
       photoUrl: row.photoUrl,
       completedAt: row.completedAt,
+      achievement: row.achievementTitle != null
+          ? AchievementInfo(
+        id: row.achievementId!,
+        title: row.achievementTitle!,
+        iconPath: row.achievementIconPath ?? 'star',
+      )
+          : null,
     );
   }
 
@@ -240,7 +273,7 @@ class SupabaseChildQuestsService implements ChildQuestsService {
   }
 
   final RegExp _uuidRe = RegExp(
-    r'^[0-9a-fA-F]{8}\-?[0-9a-fA-F]{4}\-?[1-5][0-9a-fA-F]{3}\-?[89abAB][0-9a-fA-F]{3}\-?[0-9a-fA-F]{12}$',
+    r'^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[1-5][0-9a-fA-F]{3}-?[89abAB][0-9a-fA-F]{3}-?[0-9a-fA-F]{12}$',
   );
   bool _isUuid(String? s) => s != null && _uuidRe.hasMatch(s);
 }
@@ -255,7 +288,13 @@ class _ChildQuestRow {
   final String? photoUrl;
   final DateTime? completedAt;
   final String? title;
+  final String? description;
+  final int? xp;
   final String? sphere;
+  final DateTime? questUpdatedAt;
+  final String? achievementId;
+  final String? achievementTitle;
+  final String? achievementIconPath;
 
   _ChildQuestRow({
     required this.id,
@@ -267,11 +306,21 @@ class _ChildQuestRow {
     this.photoUrl,
     this.completedAt,
     this.title,
+    this.description,
+    this.xp,
     this.sphere,
+    this.questUpdatedAt,
+    this.achievementId,
+    this.achievementTitle,
+    this.achievementIconPath,
   });
 
   factory _ChildQuestRow.fromMap(Map<String, dynamic> r) {
     final q = (r['quests'] as Map<String, dynamic>?) ?? const {};
+    final achCatalog = (q['achievements_catalog'] as List<dynamic>?) ?? [];
+    final ach = achCatalog.isNotEmpty
+        ? achCatalog.cast<Map<String, dynamic>>().first
+        : null;
     return _ChildQuestRow(
       id: r['id'].toString(),
       childId: r['child_id'].toString(),
@@ -284,7 +333,15 @@ class _ChildQuestRow {
           ? DateTime.tryParse(r['completed_at'].toString())
           : null,
       title: (q['title'] as String?)?.trim(),
+      description: (q['description'] as String?)?.trim(),
+      xp: q['xp'] as int?,
       sphere: (q['sphere'] as String?)?.trim(),
+      questUpdatedAt: q['updated_at'] != null
+          ? DateTime.tryParse(q['updated_at'].toString())
+          : null,
+      achievementId: ach?['id']?.toString(),
+      achievementTitle: ach?['title'] as String?,
+      achievementIconPath: ach?['icon_path'] as String?,
     );
   }
 }

@@ -4,11 +4,13 @@ import 'package:heros_journey/features/achievements/models/achievement_model.dar
 class AchievementCard extends StatelessWidget {
   final AchievementModel achievement;
   final ValueChanged<AchievementModel> onToggleAttachment;
+  final ValueChanged<AchievementModel> onEdit;
+  final ValueChanged<AchievementModel> onDelete;
 
   const AchievementCard({
     super.key,
     required this.achievement,
-    required this.onToggleAttachment,
+    required this.onToggleAttachment, required this.onEdit, required this.onDelete,
   });
 
   IconData _getIconData(String name) {
@@ -79,12 +81,32 @@ class AchievementCard extends StatelessWidget {
             ),
           ],
         ),
-        trailing: FilledButton(
-          onPressed: () => onToggleAttachment(achievement),
-          style: isAttached
-              ? FilledButton.styleFrom(backgroundColor: cs.error)
-              : null,
-          child: Text(isAttached ? 'Отвязать' : 'Привязать к квесту'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20),
+              tooltip: 'Редактировать ачивку',
+              onPressed: () => onEdit(achievement),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.delete_outline,
+                size: 20,
+                color: cs.error,
+              ),
+              tooltip: 'Удалить ачивку',
+              onPressed: () => onDelete(achievement),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(
+              onPressed: () => onToggleAttachment(achievement),
+              style: isAttached
+                  ? FilledButton.styleFrom(backgroundColor: cs.error)
+                  : null,
+              child: Text(isAttached ? 'Отвязать' : 'Привязать к квесту'),
+            ),
+          ],
         ),
       ),
     );

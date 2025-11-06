@@ -8,6 +8,7 @@ class CatalogQuestsList extends StatelessWidget {
   final String currentUserId;
   final ValueChanged<Quest> onEdit;
   final ValueChanged<Quest> onToggleActive;
+  final ValueChanged<Quest> onDelete;
 
   const CatalogQuestsList({
     super.key,
@@ -16,6 +17,7 @@ class CatalogQuestsList extends StatelessWidget {
     required this.currentUserId,
     required this.onEdit,
     required this.onToggleActive,
+    required this.onDelete,
   });
 
   @override
@@ -35,6 +37,7 @@ class CatalogQuestsList extends StatelessWidget {
             isEditable: isOwner,
             onEdit: () => onEdit(q),
             onToggleActive: () => onToggleActive(q),
+            onDelete: () => onDelete(q),
             currentUserId: currentUserId,
           );
         },

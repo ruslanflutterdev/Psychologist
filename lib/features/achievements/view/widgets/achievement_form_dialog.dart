@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/core/errors/auth_exception.dart';
+import 'package:heros_journey/features/achievements/models/achievement_model.dart';
 import 'package:heros_journey/features/achievements/repository/achievement_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 class AchievementFormDialog extends StatefulWidget {
   final AchievementService service;
+  final AchievementModel? initialAchievement;
 
-  const AchievementFormDialog({super.key, required this.service});
+  const AchievementFormDialog({
+    super.key,
+    required this.service,
+    this.initialAchievement,
+  });
 
   @override
   State<AchievementFormDialog> createState() => _AchievementFormDialogState();
@@ -14,8 +20,8 @@ class AchievementFormDialog extends StatefulWidget {
 
 class _AchievementFormDialogState extends State<AchievementFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _titleCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _descCtrl;
 
   bool _isSaving = false;
   String? _formError;
@@ -32,7 +38,16 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
     'auto_awesome': Icons.auto_awesome,
   };
 
-  String _selectedIconName = 'star';
+  late String _selectedIconName;
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.initialAchievement;
+    _titleCtrl = TextEditingController(text: a?.title);
+    _descCtrl = TextEditingController(text: a?.description);
+    _selectedIconName = a?.iconPath ?? 'star';
+  }
 
   @override
   void dispose() {
@@ -62,18 +77,33 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
     });
 
     final userId = Supabase.instance.client.auth.currentUser?.id;
+    final isEditing = widget.initialAchievement != null;
 
     try {
       if (userId == null) {
         throw AuthException('UNAUTHORIZED', 'Пользователь не авторизован.');
       }
 
-      await widget.service.createAchievement(
-        title: _titleCtrl.text.trim(),
-        description: _descCtrl.text.trim(),
-        iconName: _selectedIconName,
-        userId: userId,
-      );
+      final title = _titleCtrl.text.trim();
+      final description = _descCtrl.text.trim();
+      final iconName = _selectedIconName;
+
+      if (isEditing) {
+        await widget.service.updateAchievement(
+          achievementId: widget.initialAchievement!.id,
+          title: title,
+          description: description,
+          iconName: iconName,
+          active: widget.initialAchievement!.active,
+        );
+      } else {
+        await widget.service.createAchievement(
+          title: title,
+          description: description,
+          iconName: iconName,
+          userId: userId,
+        );
+      }
 
       if (mounted) Navigator.of(context).pop(true);
     } on AuthException catch (e) {
@@ -91,8 +121,9 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.initialAchievement != null;
     return AlertDialog(
-      title: const Text('Создать новую ачивку'),
+      title: Text(isEditing ? 'Редактировать ачивку' : 'Создать новую ачивку'),
       content: SizedBox(
         width: 500,
         child: Form(
@@ -105,7 +136,7 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
                 TextFormField(
                   controller: _titleCtrl,
                   decoration:
-                      const InputDecoration(labelText: 'Название ачивки'),
+                  const InputDecoration(labelText: 'Название ачивки'),
                   validator: (v) => _validateField(v, 'название'),
                   autofocus: true,
                 ),
@@ -118,9 +149,8 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Иконка ачивки',
-                    prefixIcon: Icon(availableIcons[_selectedIconName]),
                   ),
                   initialValue: _selectedIconName,
                   items: availableIcons.keys.map((name) {
@@ -141,7 +171,7 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
                     }
                   },
                   validator: (v) =>
-                      v?.isNotEmpty != true ? 'Выберите иконку' : null,
+                  v?.isNotEmpty != true ? 'Выберите иконку' : null,
                 ),
                 if (_formError != null)
                   Padding(
@@ -149,7 +179,7 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
                     child: Text(
                       _formError!,
                       style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
+                      TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ),
               ],
@@ -166,11 +196,11 @@ class _AchievementFormDialogState extends State<AchievementFormDialog> {
           onPressed: _isSaving ? null : _submit,
           child: _isSaving
               ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Создать'),
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+              : Text(isEditing ? 'Сохранить' : 'Создать'),
         ),
       ],
     );

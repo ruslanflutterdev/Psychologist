@@ -80,21 +80,21 @@ class SupabaseQuestCatalogService implements QuestCatalogService {
 
   @override
   Stream<List<Quest>> getQuests({required QuestCatalogFilter filter}) {
-    final stream =
-        _supabase.from('quests').stream(primaryKey: ['id']).order('created_at');
-
-    return stream.map((rows) {
-      final list =
-          rows.map<Map<String, dynamic>>((e) => e).map(_mapRow).toList();
-      var filtered = list;
+    Future<List<Quest>> fetchFilteredQuests() async {
+      var query = _supabase.from('quests').select(_columns.join(','));
       if (filter.onlyActive == true) {
-        filtered = filtered.where((q) => q.active).toList();
+        query = query.eq('active', 'true');
       }
       if (filter.type != null) {
-        filtered = filtered.where((q) => q.type == filter.type).toList();
+        query = query.eq('sphere', _sphereFromType(filter.type!));
       }
-      return filtered;
-    });
+      if (filter.search != null && filter.search!.isNotEmpty) {
+        query = query.ilike('title', '%${filter.search!}%');
+      }
+      final rows = await query.order('created_at', ascending: false);
+      return (rows as List).cast<Map<String, dynamic>>().map(_mapRow).toList();
+    }
+    return Stream.fromFuture(fetchFilteredQuests());
   }
 
   @override
@@ -154,5 +154,13 @@ class SupabaseQuestCatalogService implements QuestCatalogService {
     required String toggledBy,
   }) async {
     await _supabase.from('quests').update({'active': active}).eq('id', id);
+  }
+
+  @override
+  Future<void> deleteQuest({
+    required String id,
+    required String deletedBy,
+  }) async {
+    await _supabase.from('quests').delete().eq('id', id);
   }
 }
