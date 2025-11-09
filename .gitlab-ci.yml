@@ -95,12 +95,9 @@ deploy_staging:
     - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $STG_PATH"
     - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$STG_PATH
     - echo "Staging deployment complete."
-    
     - |
       ssh ${DPL_USER}@${DPL_HOST} "
-      # Установим владельца на веб-сервер (www-data)
       sudo chown -R www-data:www-data $STG_PATH &&
-      # Установим права: 755 для каталогов, 644 для файлов
       sudo find $STG_PATH -type d -exec chmod 755 {} \; &&
       sudo find $STG_PATH -type f -exec chmod 644 {} \;
       "
