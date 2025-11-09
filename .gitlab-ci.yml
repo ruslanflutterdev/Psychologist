@@ -14,7 +14,8 @@ stages:
 
 # Общие переменные
 variables:
-  FLUTTER_BASE_HREF: /
+  # Изменяем базовый путь на подкаталог, где находится сайт
+  FLUTTER_BASE_HREF: /staging/
   BUILD_DIR: build/web
   PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
 
@@ -92,10 +93,15 @@ deploy_staging:
     url: http://${DPL_HOST}/${STG_PATH}
   script:
     - echo "Deploying to Staging site at $DPL_HOST:$STG_PATH"
-    # Создание папки и копирование файлов через rsync
     - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $STG_PATH"
     - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$STG_PATH
     - echo "Staging deployment complete."
+    - |
+      ssh ${DPL_USER}@${DPL_HOST} "
+      sudo chown -R www-data:www-data $STG_PATH &&
+      sudo find $STG_PATH -type d -exec chmod 755 {} \; &&
+      sudo find $STG_PATH -type f -exec chmod 644 {} \;
+      "
   rules:
     #АВТОМАТИЧЕСКИЙ деплой при пуше в ветки 'main' ИЛИ 'dev'
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
