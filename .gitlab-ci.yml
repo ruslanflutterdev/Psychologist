@@ -15,7 +15,7 @@ stages:
 # Общие переменные
 variables:
   # Изменяем базовый путь на подкаталог, где находится сайт
-  FLUTTER_BASE_HREF: /staging/
+  FLUTTER_BASE_HREF: /staging/ 
   BUILD_DIR: build/web
   PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
 
