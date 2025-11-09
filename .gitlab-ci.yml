@@ -59,25 +59,22 @@ run_tests:
 .deploy_base:
   image: ubuntu:latest
   before_script:
-    # Установка пакетов
-    - apt update && apt install -y openssh-client rsync
+    - apt update && apt install -y openssh-client rsync openssl # ⬅️ Устанавливаем openssl
 
-    # Декодирование ключа
     - eval $(ssh-agent -s)
-    - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
 
-    # 💥 НОВЫЙ ШАГ: Проверка, что файл не поврежден
-    - echo "--- Проверка ключа ---"
-    - head -n 2 deploy_key.pem  # Показываем первые две строки
-    - tail -n 2 deploy_key.pem  # Показываем последние две строки
+    # 💥 ИСПОЛЬЗУЕМ OPENSSL ДЛЯ ДЕКОДИРОВАНИЯ
+    - echo "$DPL_SSH_KEY" | openssl base64 -d -out deploy_key.pem
+
+    # Проверка, что файл не пуст
+    - echo "--- Проверка размера файла (должно быть > 0) ---"
+    - du -h deploy_key.pem
     - echo "--- Конец проверки ---"
 
-    # Попытка добавления ключа
     - chmod 600 deploy_key.pem
     - ssh-add deploy_key.pem
-    # ЭТА КОМАНДА ТЕПЕРЬ ДОЛЖНА РАБОТАТЬ!
-    - ssh-add deploy_key.pem
-    # Отключение проверки ключа хоста при первом подключении (для CI/CD)
+
+    # Отключение проверки хоста...
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
