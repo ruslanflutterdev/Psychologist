@@ -56,29 +56,24 @@ run_tests:
 # ====================================
 # 3. DEPLOYMENT BASE (Шаблон для развертывания по SSH)
 # ====================================
-
-
-
 .deploy_base:
-  image: alpine:3.19
+  # Используем Ubuntu, который имеет полную поддержку SSH/OpenSSL
+  image: ubuntu:latest
   before_script:
-    # 1. Установка openssh-client и rsync
-    - apk update && apk add openssh-client rsync
-    # 2. Запуск ssh-agent
+    # Обновление и установка пакетов для Ubuntu (apt)
+    - apt update && apt install -y openssh-client rsync
+    # Все остальные шаги остаются прежними
     - eval $(ssh-agent -s)
-    # 3. ДЕКОДИРОВАНИЕ КЛЮЧА ИЗ ПЕРЕМЕННОЙ
-    - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem # Это строка декодирует ваш Base64 ключ
-    # 4. Установка прав
+    - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
     - chmod 600 deploy_key.pem
-    # 5. ДОБАВЛЕНИЕ КЛЮЧА
-    - ssh-add deploy_key.pem # Здесь ранее была ошибка 'Error loading key...'
+    # ЭТА КОМАНДА ТЕПЕРЬ ДОЛЖНА РАБОТАТЬ!
+    - ssh-add deploy_key.pem
     # Отключение проверки ключа хоста при первом подключении (для CI/CD)
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   dependencies:
-    - build_web # Зависим от успешно собранного артефакта
-
+    - build_web
 # ====================
 # 4. DEPLOY TO SITE 1 (STAGING/TEST)
 # ====================
