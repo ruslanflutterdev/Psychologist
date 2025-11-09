@@ -113,6 +113,8 @@ deploy_staging:
 deploy_production:
   stage: deploy_production
   extends: .deploy_base
+  variables: # <-- ДОБАВЛЯЕМ ПЕРЕОПРЕДЕЛЕНИЕ ПЕРЕМЕННЫХ
+    FLUTTER_BASE_HREF: / # <-- ДЛЯ PRODUCTION БАЗОВЫЙ ПУТЬ — КОРНЕВОЙ
   environment:
     name: production
     # Используем новые переменные DPL_HOST и PROD_PATH
@@ -123,6 +125,13 @@ deploy_production:
     - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $PROD_PATH"
     - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$PROD_PATH
     - echo "Production deployment complete."
+    # ДОБАВЛЯЕМ КОМАНДЫ ДЛЯ ПРАВ ДОСТУПА
+    - |
+      ssh ${DPL_USER}@${DPL_HOST} "
+      sudo chown -R www-data:www-data $PROD_PATH &&
+      sudo find $PROD_PATH -type d -exec chmod 755 {} \; &&
+      sudo find $PROD_PATH -type f -exec chmod 644 {} \;
+      "
   rules:
     # РУЧНОЙ деплой, только из защищенной ветки 'main'
     - if: $CI_COMMIT_BRANCH == "main"
