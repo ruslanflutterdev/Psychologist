@@ -70,7 +70,7 @@ class AppRouter {
           settings: settings,
           builder: (_) => const QuestsCatalogScreen(),
         );
-      case '/achievements': // [!code addition:start]
+      case '/achievements':
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const AchievementsScreen(),
@@ -81,9 +81,9 @@ class AppRouter {
   }
 
   static Route<dynamic> _redirect(String path) => MaterialPageRoute(
-        builder: (_) => _Redirector(path: path),
-        settings: const RouteSettings(name: '/redirect'),
-      );
+    builder: (_) => _Redirector(path: path),
+    settings: const RouteSettings(name: '/redirect'),
+  );
 }
 
 class _Redirector extends StatelessWidget {
