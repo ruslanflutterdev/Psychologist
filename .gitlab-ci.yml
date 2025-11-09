@@ -64,8 +64,6 @@ run_tests:
     - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
     - chmod 600 deploy_key.pem
     - ssh-add deploy_key.pem
-
-
     # Отключение проверки ключа хоста при первом подключении (для CI/CD)
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
