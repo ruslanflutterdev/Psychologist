@@ -65,6 +65,7 @@ run_tests:
     - chmod 600 deploy_key.pem
     - ssh-add deploy_key.pem
 
+
     # Отключение проверки ключа хоста при первом подключении (для CI/CD)
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
