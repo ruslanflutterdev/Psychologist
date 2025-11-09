@@ -14,7 +14,7 @@ stages:
 
 # Общие переменные
 variables:
-  FLUTTER_BASE_HREF: / # <-- ПРОВЕРЬТЕ ЭТУ СТРОКУ
+  FLUTTER_BASE_HREF: /
   BUILD_DIR: build/web
   PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
 
@@ -56,13 +56,23 @@ run_tests:
 .deploy_base:
   image: alpine:3.19
   before_script:
+    # Установка утилит
     - apk update && apk add openssh-client rsync
     - eval $(ssh-agent -s)
-    - echo "$SSH_KEY_BASE64" | base64 -d > deploy_key.pem
+
+    # 1. Декодируем Base64 строку и создаем файл
+    - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
+    # 2. Устанавливаем права доступа
     - chmod 600 deploy_key.pem
+    # 3. Загружаем незашифрованный ключ из файла
     - ssh-add deploy_key.pem
+
+    # Создание папки .ssh для известных хостов
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  dependencies:
+    - build_web
 
 # ====================
 # 4. DEPLOY TO SITE 1 (STAGING/TEST)
@@ -72,12 +82,13 @@ deploy_staging:
   extends: .deploy_base
   environment:
     name: staging
-    url: http://${DEPLOY_HOST}/${STAGING_PATH}
+    # [!code change] Обновление URL на новые переменные
+    url: http://${DPL_HOST}/${STG_PATH}
   script:
-    - echo "Deploying to Staging site at $DEPLOY_HOST:$STAGING_PATH"
-    - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $STAGING_PATH"
-    # Использует переменные DEPLOY_USER, DEPLOY_HOST, STAGING_PATH
-    - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$STAGING_PATH
+    - echo "Deploying to Staging site at $DPL_HOST:$STG_PATH"
+    # [!code change] Использование DPL_USER, DPL_HOST, STG_PATH
+    - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $STG_PATH"
+    - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$STG_PATH
     - echo "Staging deployment complete."
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
@@ -91,12 +102,13 @@ deploy_production:
   extends: .deploy_base
   environment:
     name: production
-    url: http://${DEPLOY_HOST}/${PRODUCTION_PATH}
+    # [!code change] Обновление URL на новые переменные
+    url: http://${DPL_HOST}/${PROD_PATH}
   script:
-    - echo "Deploying to Production site at $DEPLOY_HOST:$PRODUCTION_PATH"
-    - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $PRODUCTION_PATH"
-    # Использует защищенную переменную PRODUCTION_PATH
-    - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$PRODUCTION_PATH
+    - echo "Deploying to Production site at $DPL_HOST:$PROD_PATH"
+    # [!code change] Использование DPL_USER, DPL_HOST, PROD_PATH
+    - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $PROD_PATH"
+    - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$PROD_PATH
     - echo "Production deployment complete."
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
