@@ -62,11 +62,16 @@ run_tests:
 .deploy_base:
   image: alpine:3.19
   before_script:
+    # 1. Установка openssh-client и rsync
     - apk update && apk add openssh-client rsync
+    # 2. Запуск ssh-agent
     - eval $(ssh-agent -s)
-    - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
+    # 3. ДЕКОДИРОВАНИЕ КЛЮЧА ИЗ ПЕРЕМЕННОЙ
+    - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem # Это строка декодирует ваш Base64 ключ
+    # 4. Установка прав
     - chmod 600 deploy_key.pem
-    - ssh-add deploy_key.pem
+    # 5. ДОБАВЛЕНИЕ КЛЮЧА
+    - ssh-add deploy_key.pem # Здесь ранее была ошибка 'Error loading key...'
     # Отключение проверки ключа хоста при первом подключении (для CI/CD)
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
