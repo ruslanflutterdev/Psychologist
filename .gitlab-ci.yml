@@ -57,6 +57,8 @@ run_tests:
 # 3. DEPLOYMENT BASE (Шаблон для развертывания по SSH)
 # ====================================
 
+
+
 .deploy_base:
   image: alpine:3.19
   before_script:
