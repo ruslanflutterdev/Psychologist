@@ -57,18 +57,12 @@ run_tests:
 # 3. DEPLOYMENT BASE (Шаблон для развертывания по SSH)
 # ====================================
 .deploy_base:
-  # Используем стандартный образ Alpine (для установки ssh и rsync)
   image: alpine:3.19
   before_script:
-    # Установка утилит openssh-client и rsync
     - apk update && apk add openssh-client rsync
     - eval $(ssh-agent -s)
-
-    # 1. Декодируем Base64 строку (незашифрованный приватный ключ) и создаем файл
     - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
-    # 2. Устанавливаем права доступа (обязательно для SSH)
     - chmod 600 deploy_key.pem
-    # 3. Загружаем незашифрованный ключ из файла
     - ssh-add deploy_key.pem
 
     # Отключение проверки ключа хоста при первом подключении (для CI/CD)
