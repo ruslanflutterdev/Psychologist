@@ -19,11 +19,14 @@ variables:
   PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
 
 # ====================
-# ШАБЛОН ДЛЯ FLUTTER CI
+# ШАБЛОН ДЛЯ FLUTTER CI (Сборка и Тесты)
 # ====================
 .flutter_template:
+  # Используем стабильный образ с Flutter 3.35.7 (для совместимости с Dart 3.x)
   image: instrumentisto/flutter:3.35
   before_script:
+    # Исправление ошибки "dubious ownership"
+    - git config --global --add safe.directory /usr/local/flutter
     - export PATH="$PATH:$PUB_CACHE/bin"
     - flutter pub get
 
@@ -51,28 +54,29 @@ run_tests:
   allow_failure: true
 
 # ====================================
-# 3. DEPLOYMENT BASE (Шаблон для развертывания)
+# 3. DEPLOYMENT BASE (Шаблон для развертывания по SSH)
 # ====================================
 .deploy_base:
+  # Используем стандартный образ Alpine (для установки ssh и rsync)
   image: alpine:3.19
   before_script:
-    # Установка утилит
+    # Установка утилит openssh-client и rsync
     - apk update && apk add openssh-client rsync
     - eval $(ssh-agent -s)
 
-    # 1. Декодируем Base64 строку и создаем файл
+    # 1. Декодируем Base64 строку (незашифрованный приватный ключ) и создаем файл
     - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
-    # 2. Устанавливаем права доступа
+    # 2. Устанавливаем права доступа (обязательно для SSH)
     - chmod 600 deploy_key.pem
     # 3. Загружаем незашифрованный ключ из файла
     - ssh-add deploy_key.pem
 
-    # Создание папки .ssh для известных хостов
+    # Отключение проверки ключа хоста при первом подключении (для CI/CD)
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   dependencies:
-    - build_web
+    - build_web # Зависим от успешно собранного артефакта
 
 # ====================
 # 4. DEPLOY TO SITE 1 (STAGING/TEST)
@@ -82,16 +86,17 @@ deploy_staging:
   extends: .deploy_base
   environment:
     name: staging
-    # [!code change] Обновление URL на новые переменные
+    # Используем новые переменные DPL_HOST и STG_PATH
     url: http://${DPL_HOST}/${STG_PATH}
   script:
     - echo "Deploying to Staging site at $DPL_HOST:$STG_PATH"
-    # [!code change] Использование DPL_USER, DPL_HOST, STG_PATH
+    # Создание папки и копирование файлов через rsync
     - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $STG_PATH"
     - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$STG_PATH
     - echo "Staging deployment complete."
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    #АВТОМАТИЧЕСКИЙ деплой при пуше в ветки 'main' ИЛИ 'dev'
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
       when: on_success
 
 # ====================
@@ -102,15 +107,16 @@ deploy_production:
   extends: .deploy_base
   environment:
     name: production
-    # [!code change] Обновление URL на новые переменные
+    # Используем новые переменные DPL_HOST и PROD_PATH
     url: http://${DPL_HOST}/${PROD_PATH}
   script:
     - echo "Deploying to Production site at $DPL_HOST:$PROD_PATH"
-    # [!code change] Использование DPL_USER, DPL_HOST, PROD_PATH
+    # Создание папки и копирование файлов через rsync
     - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $PROD_PATH"
     - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$PROD_PATH
     - echo "Production deployment complete."
   rules:
+    # РУЧНОЙ деплой, только из защищенной ветки 'main'
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual # Ожидает ручного запуска
+      when: manual
       allow_failure: false
