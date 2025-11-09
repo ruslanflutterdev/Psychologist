@@ -102,6 +102,7 @@ deploy_staging:
 # ====================
 # 5. DEPLOY TO SITE 2 (PRODUCTION)
 # ====================
+
 deploy_production:
   stage: deploy_production
   extends: .deploy_base
