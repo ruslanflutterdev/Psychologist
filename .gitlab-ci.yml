@@ -57,15 +57,24 @@ run_tests:
 # 3. DEPLOYMENT BASE (Шаблон для развертывания по SSH)
 # ====================================
 .deploy_base:
-  # Используем Ubuntu, который имеет полную поддержку SSH/OpenSSL
   image: ubuntu:latest
   before_script:
-    # Обновление и установка пакетов для Ubuntu (apt)
+    # Установка пакетов
     - apt update && apt install -y openssh-client rsync
-    # Все остальные шаги остаются прежними
+
+    # Декодирование ключа
     - eval $(ssh-agent -s)
     - echo "$DPL_SSH_KEY" | base64 -d > deploy_key.pem
+
+    # 💥 НОВЫЙ ШАГ: Проверка, что файл не поврежден
+    - echo "--- Проверка ключа ---"
+    - head -n 2 deploy_key.pem  # Показываем первые две строки
+    - tail -n 2 deploy_key.pem  # Показываем последние две строки
+    - echo "--- Конец проверки ---"
+
+    # Попытка добавления ключа
     - chmod 600 deploy_key.pem
+    - ssh-add deploy_key.pem
     # ЭТА КОМАНДА ТЕПЕРЬ ДОЛЖНА РАБОТАТЬ!
     - ssh-add deploy_key.pem
     # Отключение проверки ключа хоста при первом подключении (для CI/CD)
