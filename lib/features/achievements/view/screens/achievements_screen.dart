@@ -73,7 +73,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
     final selectedQuest = await showDialog<Quest>(
       context: context,
-      builder: (_) => QuestPickerDialog(catalog: ServiceRegistry.questCatalog),
+      builder: (_) => QuestPickerDialog(
+        catalog: ServiceRegistry.questCatalog,
+        takenQuestIds: const [],
+      ),
     );
 
     if (selectedQuest != null) {
