@@ -10,7 +10,10 @@ bool _recoveryHandled = false;
 void setupAuthRecoveryListener(GlobalKey<NavigatorState> navigatorKey) {
   Supabase.instance.client.auth.onAuthStateChange.listen((data) {
     final event = data.event;
-
+    final isAuthenticated = data.session != null && data.session!.accessToken.isNotEmpty;
+    if (isAuthenticated) {
+      return;
+    }
     final hasRecoveryFragment = Uri.base.fragment.contains('type=recovery');
     final hasPkceCode = Uri.base.queryParameters.containsKey('code');
     final isRecoveryFlow = hasRecoveryFragment ||
@@ -33,7 +36,7 @@ void setupAuthRecoveryListener(GlobalKey<NavigatorState> navigatorKey) {
             child: const ResetScreen(),
           ),
         ),
-        (route) => false,
+            (route) => false,
       );
     });
   });

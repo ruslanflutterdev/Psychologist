@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:heros_journey/features/auth_reset/viewmodel/widgets/reset_form.dart';
-import 'package:heros_journey/features/auth_reset/viewmodel/widgets/reset_listener.dart';
 
 class ResetScaffold extends StatelessWidget {
   const ResetScaffold({super.key});
@@ -18,7 +17,9 @@ class ResetScaffold extends StatelessWidget {
               padding: EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [ResetListener(), ResetForm()],
+                children: [
+                  ResetForm()
+                ],
               ),
             ),
           ),

@@ -1,8 +1,20 @@
 abstract class ResetEvent {}
 
-class ResetSubmitted extends ResetEvent {
+class ResetEmailSubmitted extends ResetEvent {
+  final String email;
+
+  ResetEmailSubmitted({required this.email});
+}
+
+class ResetOtpSubmitted extends ResetEvent {
+  final String otpCode;
+
+  ResetOtpSubmitted({required this.otpCode});
+}
+
+class ResetPasswordSubmitted extends ResetEvent {
   final String password;
   final String confirm;
 
-  ResetSubmitted({required this.password, required this.confirm});
+  ResetPasswordSubmitted({required this.password, required this.confirm});
 }

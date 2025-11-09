@@ -127,10 +127,10 @@ class SupabaseAuthService implements AuthService {
   @override
   Future<void> requestPasswordReset({required String email}) async {
     try {
-      final redirectUrl = kIsWeb ? Uri.base.resolve('/reset').toString() : null;
+      // Используем метод resetPasswordForEmail для отправки OTP
       await _supabase.auth.resetPasswordForEmail(
         email,
-        redirectTo: redirectUrl,
+        // !!! ВАЖНО: Не указываем 'redirectTo', чтобы сброс происходил через OTP-код, а не по ссылке
       );
     } on sb.AuthException catch (e) {
       throw core.AuthException('SUPABASE', _pretty(e.message));
@@ -141,8 +141,34 @@ class SupabaseAuthService implements AuthService {
       );
     }
   }
+  /// Временный метод для проверки OTP и установки новой сессии.
+  Future<sb.Session> verifyOtpAndSetSession({
+    required String email,
+    required String token,
+  }) async {
+    try {
+      final response = await _supabase.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: sb.OtpType.recovery,
+      );
 
-  /// Применяет новый пароль непосредственно в "recovery"-сессии.
+      final session = response.session;
+      if (session == null) {
+        throw core.AuthException('INVALID_OTP', 'Неверный или истекший код сброса.');
+      }
+      return session;
+    } on sb.AuthException catch (e) {
+      throw core.AuthException('SUPABASE', _pretty(e.message));
+    } catch (e) {
+      throw core.AuthException(
+        'UNKNOWN',
+        'Ошибка проверки кода: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Применяет новый пароль.
   /// Соответствует методу интерфейса AuthService.applyNewPassword.
   @override
   Future<void> applyNewPassword({required String newPassword}) async {
