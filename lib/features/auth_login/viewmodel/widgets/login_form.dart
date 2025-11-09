@@ -46,7 +46,7 @@ class _LoginFormState extends State<LoginForm> {
 
   void _goForgot() {
     context.read<LoginBloc>().add(LoginForgotPassword());
-    Navigator.of(context).pushReplacementNamed('/forgot');
+    Navigator.of(context).pushReplacementNamed('/reset');
   }
 
   @override
