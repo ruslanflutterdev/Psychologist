@@ -96,8 +96,6 @@ deploy_staging:
     - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$STG_PATH
     - echo "Staging deployment complete."
     
-    # 💥 НОВЫЙ ШАГ: Исправление прав доступа
-    # Предполагаем, что веб-сервер работает под пользователем www-data
     - |
       ssh ${DPL_USER}@${DPL_HOST} "
       # Установим владельца на веб-сервер (www-data)
