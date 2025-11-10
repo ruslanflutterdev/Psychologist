@@ -14,16 +14,20 @@ stages:
 
 # Общие переменные
 variables:
-  FLUTTER_BASE_HREF: / # <-- ПРОВЕРЬТЕ ЭТУ СТРОКУ
+  # Изменяем базовый путь на подкаталог, где находится сайт
+  FLUTTER_BASE_HREF: /staging/ 
   BUILD_DIR: build/web
   PUB_CACHE: $CI_PROJECT_DIR/.pub-cache
 
 # ====================
-# ШАБЛОН ДЛЯ FLUTTER CI
+# ШАБЛОН ДЛЯ FLUTTER CI (Сборка и Тесты)
 # ====================
 .flutter_template:
+  # Используем стабильный образ с Flutter 3.35.7 (для совместимости с Dart 3.x)
   image: instrumentisto/flutter:3.35
   before_script:
+    # Исправление ошибки "dubious ownership"
+    - git config --global --add safe.directory /usr/local/flutter
     - export PATH="$PATH:$PUB_CACHE/bin"
     - flutter pub get
 
@@ -51,19 +55,32 @@ run_tests:
   allow_failure: true
 
 # ====================================
-# 3. DEPLOYMENT BASE (Шаблон для развертывания)
+# 3. DEPLOYMENT BASE (Шаблон для развертывания по SSH)
 # ====================================
 .deploy_base:
-  image: alpine:3.19
+  image: ubuntu:latest
   before_script:
-    - apk update && apk add openssh-client rsync
+    - apt update && apt install -y openssh-client rsync openssl # ⬅️ Устанавливаем openssl
+
     - eval $(ssh-agent -s)
-    - echo "$SSH_KEY_BASE64" | base64 -d > deploy_key.pem
+
+    # 💥 ИСПОЛЬЗУЕМ OPENSSL ДЛЯ ДЕКОДИРОВАНИЯ
+    - echo "$DPL_SSH_KEY" | openssl base64 -d -out deploy_key.pem
+
+    # Проверка, что файл не пуст
+    - echo "--- Проверка размера файла (должно быть > 0) ---"
+    - du -h deploy_key.pem
+    - echo "--- Конец проверки ---"
+
     - chmod 600 deploy_key.pem
     - ssh-add deploy_key.pem
+
+    # Отключение проверки хоста...
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  dependencies:
+    - build_web
 # ====================
 # 4. DEPLOY TO SITE 1 (STAGING/TEST)
 # ====================
@@ -72,15 +89,22 @@ deploy_staging:
   extends: .deploy_base
   environment:
     name: staging
-    url: http://${DEPLOY_HOST}/${STAGING_PATH}
+    # Используем новые переменные DPL_HOST и STG_PATH
+    url: http://${DPL_HOST}/${STG_PATH}
   script:
-    - echo "Deploying to Staging site at $DEPLOY_HOST:$STAGING_PATH"
-    - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $STAGING_PATH"
-    # Использует переменные DEPLOY_USER, DEPLOY_HOST, STAGING_PATH
-    - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$STAGING_PATH
+    - echo "Deploying to Staging site at $DPL_HOST:$STG_PATH"
+    - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $STG_PATH"
+    - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$STG_PATH
     - echo "Staging deployment complete."
+    - |
+      ssh ${DPL_USER}@${DPL_HOST} "
+      sudo chown -R www-data:www-data $STG_PATH &&
+      sudo find $STG_PATH -type d -exec chmod 755 {} \; &&
+      sudo find $STG_PATH -type f -exec chmod 644 {} \;
+      "
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    #АВТОМАТИЧЕСКИЙ деплой при пуше в ветки 'main' ИЛИ 'dev'
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
       when: on_success
 
 # ====================
@@ -89,16 +113,27 @@ deploy_staging:
 deploy_production:
   stage: deploy_production
   extends: .deploy_base
+  variables: # <-- ДОБАВЛЯЕМ ПЕРЕОПРЕДЕЛЕНИЕ ПЕРЕМЕННЫХ
+    FLUTTER_BASE_HREF: / # <-- ДЛЯ PRODUCTION БАЗОВЫЙ ПУТЬ — КОРНЕВОЙ
   environment:
     name: production
-    url: http://${DEPLOY_HOST}/${PRODUCTION_PATH}
+    # Используем новые переменные DPL_HOST и PROD_PATH
+    url: http://${DPL_HOST}/${PROD_PATH}
   script:
-    - echo "Deploying to Production site at $DEPLOY_HOST:$PRODUCTION_PATH"
-    - ssh ${DEPLOY_USER}@${DEPLOY_HOST} "mkdir -p $PRODUCTION_PATH"
-    # Использует защищенную переменную PRODUCTION_PATH
-    - rsync -av --delete $BUILD_DIR/ ${DEPLOY_USER}@${DEPLOY_HOST}:$PRODUCTION_PATH
+    - echo "Deploying to Production site at $DPL_HOST:$PROD_PATH"
+    # Создание папки и копирование файлов через rsync
+    - ssh ${DPL_USER}@${DPL_HOST} "mkdir -p $PROD_PATH"
+    - rsync -av --delete $BUILD_DIR/ ${DPL_USER}@${DPL_HOST}:$PROD_PATH
     - echo "Production deployment complete."
+    # ДОБАВЛЯЕМ КОМАНДЫ ДЛЯ ПРАВ ДОСТУПА
+    - |
+      ssh ${DPL_USER}@${DPL_HOST} "
+      sudo chown -R www-data:www-data $PROD_PATH &&
+      sudo find $PROD_PATH -type d -exec chmod 755 {} \; &&
+      sudo find $PROD_PATH -type f -exec chmod 644 {} \;
+      "
   rules:
+    # РУЧНОЙ деплой, только из защищенной ветки 'main'
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual # Ожидает ручного запуска
+      when: manual
       allow_failure: false

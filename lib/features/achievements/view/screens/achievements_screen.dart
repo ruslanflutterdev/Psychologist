@@ -73,7 +73,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
     final selectedQuest = await showDialog<Quest>(
       context: context,
-      builder: (_) => QuestPickerDialog(catalog: ServiceRegistry.questCatalog),
+      builder: (_) => QuestPickerDialog(
+        catalog: ServiceRegistry.questCatalog,
+        takenQuestIds: const [],
+      ),
     );
 
     if (selectedQuest != null) {
@@ -89,6 +92,64 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             ),
           ),
         );
+      }
+    }
+  }
+
+  void _openEditDialog(AchievementModel achievement) async {
+    final success = await showDialog<bool>(
+      context: context,
+      builder: (_) => AchievementFormDialog(
+        service: _service,
+        initialAchievement: achievement,
+      ),
+    );
+    if (success == true) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ачивка "${achievement.title}" обновлена.')),
+        );
+      }
+    }
+  }
+
+  void _deleteAchievement(AchievementModel achievement) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Удалить ачивку?'),
+        content: Text(
+          'Вы уверены, что хотите удалить ачивку "${achievement.title}"? Это действие необратимо.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(ctx).colorScheme.error),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _service.deleteAchievement(achievementId: achievement.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ачивка "${achievement.title}" удалена.')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ошибка удаления: ${e.toString()}')),
+          );
+        }
       }
     }
   }
@@ -139,6 +200,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               return AchievementCard(
                 achievement: ach,
                 onToggleAttachment: _toggleAttachment,
+                onEdit: _openEditDialog,
+                onDelete: _deleteAchievement,
               );
             },
           );

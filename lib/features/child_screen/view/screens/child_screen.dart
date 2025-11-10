@@ -72,16 +72,32 @@ class _ChildScreenState extends State<ChildScreen> {
     }
   }
 
+  Future<List<String>> _fetchTakenQuestIds() async {
+    final service = ServiceRegistry.childQuests;
+    final assignedQuests = await service.getAssigned(widget.childId).first;
+    final completedQuests = await service.getCompleted(widget.childId).first;
+    final assignedIds = assignedQuests.map((q) => q.quest.id).toSet();
+    final completedIds = completedQuests.map((q) => q.quest.id).toSet();
+
+    return (assignedIds.union(completedIds)).toList();
+  }
+
   Future<void> _assignQuestFlow() async {
     final session = context.read<SessionCubit>().state;
     final currentUserId = session?.token ?? 'MOCK_PSYCH_ID';
 
     setState(() => _isAssigning = true);
     try {
+      final takenQuestIds = await _fetchTakenQuestIds();
+      if (!mounted) return;
+
       final quest = await showDialog<Quest>(
         context: context,
         builder: (_) =>
-            QuestPickerDialog(catalog: ServiceRegistry.questCatalog),
+            QuestPickerDialog(
+              catalog: ServiceRegistry.questCatalog,
+              takenQuestIds: takenQuestIds,
+            ),
       );
       if (!mounted) return;
 
@@ -151,13 +167,6 @@ class _ChildScreenState extends State<ChildScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               ChildInfoCard(isLoading: _loadingChild, child: _child),
-              // [!code change:start]
-              // Удаляем ParentContactCard, так как его функционал интегрирован в ChildInfoCard
-              // ParentContactCard(
-              //   childId: widget.childId,
-              //   service: ServiceRegistry.parentContact,
-              // ),
-              // [!code change:end]
               const SizedBox(height: 8),
               ChildErrorText(error: _error),
               const SizedBox(height: 8),

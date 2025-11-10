@@ -4,8 +4,6 @@ import 'package:heros_journey/core/services/service_registry.dart';
 import 'package:heros_journey/core/session/session_cubit.dart';
 import 'package:heros_journey/features/achievements/view/screens/achievements_screen.dart';
 import 'package:heros_journey/features/agreement/view/agreement_screen.dart';
-import 'package:heros_journey/features/auth_forgot/view/screens/forgot_screen.dart';
-import 'package:heros_journey/features/auth_forgot/viewmodel/services/forgot_bloc.dart';
 import 'package:heros_journey/features/auth_login/view/screens/login_screen.dart';
 import 'package:heros_journey/features/auth_login/viewmodel/services/login_bloc.dart';
 import 'package:heros_journey/features/auth_registration/view/screens/registration_screen.dart';
@@ -44,14 +42,6 @@ class AppRouter {
           settings: settings,
           builder: (_) => const PsychologistScreen(),
         );
-      case '/forgot':
-        return MaterialPageRoute(
-          settings: settings,
-          builder: (ctx) => BlocProvider(
-            create: (_) => ForgotBloc(auth: ServiceRegistry.auth),
-            child: const ForgotScreen(),
-          ),
-        );
       case '/agreement':
         return MaterialPageRoute(
           settings: settings,
@@ -70,7 +60,7 @@ class AppRouter {
           settings: settings,
           builder: (_) => const QuestsCatalogScreen(),
         );
-      case '/achievements': // [!code addition:start]
+      case '/achievements':
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const AchievementsScreen(),
@@ -81,9 +71,9 @@ class AppRouter {
   }
 
   static Route<dynamic> _redirect(String path) => MaterialPageRoute(
-        builder: (_) => _Redirector(path: path),
-        settings: const RouteSettings(name: '/redirect'),
-      );
+    builder: (_) => _Redirector(path: path),
+    settings: const RouteSettings(name: '/redirect'),
+  );
 }
 
 class _Redirector extends StatelessWidget {

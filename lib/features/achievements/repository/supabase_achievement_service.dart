@@ -204,4 +204,50 @@ class SupabaseAchievementService implements AchievementService {
       );
     }
   }
+  @override
+  Future<void> updateAchievement({
+    required String achievementId,
+    required String title,
+    required String description,
+    required String iconName,
+    required bool active,
+  }) async {
+    try {
+      await _supabase
+          .from(_tableName)
+          .update({
+        'title': title,
+        'description': description,
+        'icon_path': iconName,
+        'active': active,
+      })
+          .eq('id', achievementId)
+          .select()
+          .single();
+
+      await _refetchAndStream();
+    } on sb.PostgrestException catch (e) {
+      throw AuthException('DB_ERROR', 'Ошибка обновления ачивки: ${e.message}');
+    } catch (e) {
+      throw AuthException(
+        'UNKNOWN',
+        'Неизвестная ошибка при обновлении ачивки: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> deleteAchievement({required String achievementId}) async {
+    try {
+      await _supabase.from(_tableName).delete().eq('id', achievementId);
+      await _refetchAndStream();
+    } on sb.PostgrestException catch (e) {
+      throw AuthException('DB_ERROR', 'Ошибка удаления ачивки: ${e.message}');
+    } catch (e) {
+      throw AuthException(
+        'UNKNOWN',
+        'Неизвестная ошибка при удалении ачивки: ${e.toString()}',
+      );
+    }
+  }
 }

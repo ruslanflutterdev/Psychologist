@@ -46,15 +46,11 @@ class _ChildQuestsSectionState extends State<ChildQuestsSection> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildAssignedHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('Текущие задания', style: Theme.of(context).textTheme.titleMedium),
-        QuestTimeFilterDropdown(
-          currentFilter: _currentFilter,
-          onFilterChanged: _handleFilterChanged,
-        ),
       ],
     );
   }
@@ -84,7 +80,7 @@ class _ChildQuestsSectionState extends State<ChildQuestsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildHeader(context),
+        _buildAssignedHeader(context),
         const SizedBox(height: 8),
         StreamBuilder<List<ChildQuest>>(
           stream: widget.service.getAssigned(
@@ -117,7 +113,16 @@ class _ChildQuestsSectionState extends State<ChildQuestsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Выполненные', style: theme.textTheme.titleMedium),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Выполненные', style: theme.textTheme.titleMedium),
+            QuestTimeFilterDropdown(
+              currentFilter: _currentFilter,
+              onFilterChanged: _handleFilterChanged,
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         StreamBuilder<List<ChildQuest>>(
           stream: widget.service.getCompleted(
