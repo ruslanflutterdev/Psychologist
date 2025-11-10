@@ -69,11 +69,12 @@ jobs:
       # 4. Сборка Flutter Web (Критически важный шаг для CD)
       - name: Build Flutter Web
         # Используем --base-href, который соответствует имени вашего репозитория
-        run: flutter build web --release --base-href /Psychologist/
+       # run: flutter build web --release --base-href /Psychologist/
+        run: flutter build web --release --base-href /
 
       # 5. CD: Деплой на GitHub Pages (Используем peaceiris/actions-gh-pages)
       - name: Deploy to GitHub Pages
-        if: success() # [!code change] Деплой только после успешного выполнения всех предыдущих шагов
+        if: success() # Деплой только после успешного выполнения всех предыдущих шагов
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
